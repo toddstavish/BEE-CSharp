@@ -21,6 +21,7 @@ namespace BEE
                 new Coordinate(-73.957986,40.800566) // Close this polygon!
 			};
 
+
             Polygon poly = (Polygon)factory.CreatePolygon(new LinearRing(coords));
             System.Diagnostics.Debug.WriteLine("Central Park Area: " + poly.Area);
         }

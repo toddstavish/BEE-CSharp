@@ -1,6 +1,6 @@
-# Building Extraction Evaluation (BEE) CSharp
+# Building Extraction Evaluation (BEE) C# Style
 
-A CSharp console application that performs polygon comparison for building extraction evaluation using [Intersection over Union (IoU)](https://en.wikipedia.org/wiki/Jaccard_index). 
+A C# console application that performs polygon comparison for building extraction evaluation using [Intersection over Union (IoU)](https://en.wikipedia.org/wiki/Jaccard_index). 
 
 ## Development steps
 1. git clone https://github.com/toddstavish/BEE-CSharp.git
