@@ -11,6 +11,7 @@ A C# console application that performs polygon comparison for building extractio
 ## To-do
 1. Test over robust lat/long dataset
 2. Compare against GEOS 
+3. Test if there is intersection before calculating Jaccard
 
 ## License
 See [LICENSE](./LICENSE).
