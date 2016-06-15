@@ -1,4 +1,4 @@
-# Building Extraction Evaluation (BEE) in C#
+# Building Extraction Evaluation (BEE) in C#/.NET
 
 A C# console application that performs polygon comparison for building extraction evaluation using [Intersection over Union (IoU)](https://en.wikipedia.org/wiki/Jaccard_index). 
 
