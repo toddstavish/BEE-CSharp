@@ -6,6 +6,7 @@ A C# console application that performs polygon comparison for building extractio
 1. git clone https://github.com/toddstavish/BEE-CSharp.git
 2. Install [NuGet](https://www.nuget.org/)
 3. Install NetTopologySuite - PM> Install-Package NetTopologySuite
+4. Install GeoJSON IO Library - PM> Install-Package NetTopologySuite.IO.GeoJSON
 
 ## To-do
 1. Test over robust lat/long dataset
