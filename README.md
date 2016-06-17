@@ -7,6 +7,7 @@ A C# console application that performs polygon comparison for building extractio
 2. Install [NuGet](https://www.nuget.org/)
 3. Install NetTopologySuite - PM> Install-Package NetTopologySuite
 4. Install GeoJSON IO Library - PM> Install-Package NetTopologySuite.IO.GeoJSON
+5. Install GDAL - PM> Install-Package GDAL
 
 ## To-do
 1. Test over robust lat/long dataset

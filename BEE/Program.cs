@@ -1,16 +1,86 @@
 ﻿using System;
 using GeoAPI.Geometries;
 using NetTopologySuite.Geometries;
+using OSGeo.GDAL;
+using OSGeo.OGR;
+using OSGeo.OSR;
 
 namespace BEE
 {
     class Program
     {
+        public static Coordinate latLongtoPix(double lat, double lon, string rasterFp)
+        {
+            Gdal.AllRegister();
+
+            // Source projection
+            SpatialReference src = new SpatialReference("");
+            src.ImportFromProj4("+proj=latlong +datum=WGS84 +no_defs");
+            OSGeo.OGR.Geometry geom = new OSGeo.OGR.Geometry(wkbGeometryType.wkbPoint);
+            geom.AddPoint(lon, lat, 0);
+
+            // Raster projection
+            Dataset raster = Gdal.Open(rasterFp, Access.GA_ReadOnly);
+            SpatialReference dst = new SpatialReference("");
+            string rasterProj = raster.GetProjectionRef();
+            dst.ImportFromWkt(ref rasterProj);
+            CoordinateTransformation ct =  new CoordinateTransformation(src, dst);
+
+            double[] transform = new double[6];
+            raster.GetGeoTransform(transform);
+
+            double xOrigin = transform[0];
+            double yOrigin = transform[3];
+            double pixelWidth = transform[1];
+            double pixelHeight = transform[5];
+
+            geom.Transform(ct);
+            double[] points = new double[2];
+            geom.GetPoint(0, points);
+            double xPix = (points[0] - xOrigin) / pixelWidth;
+            double yPix = (points[1] - yOrigin) / pixelHeight;
+
+            return new Coordinate(xPix, yPix);
+        }
+
+        public static OSGeo.OGR.Geometry pixToLatLong(double xPix, double yPix, string rasterFp)
+        {
+            Gdal.AllRegister();
+
+            // Raster projection
+            Dataset raster = Gdal.Open(rasterFp, Access.GA_ReadOnly);
+            SpatialReference src = new SpatialReference("");
+            string rasterProj = raster.GetProjectionRef();
+            src.ImportFromWkt(ref rasterProj);
+
+            // Destination projection
+            SpatialReference dst = new SpatialReference("");
+            dst.ImportFromProj4("+proj=latlong +datum=WGS84 +no_defs");
+            CoordinateTransformation ct = new CoordinateTransformation(src, dst);
+
+            OSGeo.OGR.Geometry geom = new OSGeo.OGR.Geometry(wkbGeometryType.wkbPoint);
+
+            double[] transform = new double[6];
+            raster.GetGeoTransform(transform);
+
+            double xOrigin = transform[0];
+            double yOrigin = transform[3];
+            double pixelWidth = transform[1];
+            double pixelHeight = transform[5];
+
+            double xCoord = (xPix * pixelWidth) + xOrigin;
+            double yCoord = (yPix * pixelHeight) + yOrigin;
+
+            geom.AddPoint(xCoord, yCoord, 0);
+            geom.Transform(ct);
+            return geom;
+        }
+
         public static double calculateJaccard(Polygon poly1, Polygon poly2)
         {
-            double intersection = poly1.Intersection(poly2).Area; poly1.
+            double intersection = poly1.Intersection(poly2).Area;
             System.Diagnostics.Debug.WriteLine("area of intersection:" + intersection);
-            double union = poly2.Union(poly2).Area;
+            double union = poly1.Union(poly2).Area;
             System.Diagnostics.Debug.WriteLine("area of union:" + union);
             return intersection/union;
         }
