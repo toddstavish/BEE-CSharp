@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using GeoAPI.Geometries;
 using NetTopologySuite.Geometries;
 using OSGeo.GDAL;
 using OSGeo.OGR;
 using OSGeo.OSR;
+using ClipperLib;
+using Kaggle.Metrics.Utilities;
 
 namespace BEE
 {
@@ -79,10 +82,14 @@ namespace BEE
         public static double calculateJaccard(Polygon poly1, Polygon poly2)
         {
             double intersection = poly1.Intersection(poly2).Area;
-            System.Diagnostics.Debug.WriteLine("area of intersection:" + intersection);
             double union = poly1.Union(poly2).Area;
-            System.Diagnostics.Debug.WriteLine("area of union:" + union);
             return intersection/union;
+        }
+
+        public static double areaOfUnion(Polygon poly1, Polygon poly2)
+        {
+            double aOfU = poly1.Union(poly2).Area;
+            return aOfU;
         }
 
         static void Main(string[] args)
@@ -93,10 +100,11 @@ namespace BEE
             // Factory for EPSG:4326 - wgs 84 (lat/longs) * global
             GeometryFactory gcsfactory = new GeometryFactory(new PrecisionModel(), 4326);
 
-            //Factory for EPSG:32754 - wgs 84 / utm zone 54s * regional boundaries
-            GeometryFactory utmfactory = new GeometryFactory();
-
-            // Test Cartesian Coordinates
+            //
+            // Test Cartesian Coordinates in both implementations of Jaccard
+            //
+            
+            // NetTopologySuite
             Coordinate[] coords1 = new Coordinate[]{
                 new Coordinate(62, 135),
                 new Coordinate(120, 208),
@@ -129,12 +137,45 @@ namespace BEE
             Polygon poly2 = (Polygon)cartFactory.CreatePolygon(new LinearRing(coords2));
             Polygon poly3 = (Polygon)cartFactory.CreatePolygon(new LinearRing(coords3));
             Polygon poly4 = (Polygon)cartFactory.CreatePolygon(new LinearRing(coords4));
-            System.Diagnostics.Debug.WriteLine("Jacard(poly1, poly1):" + calculateJaccard(poly1, poly1));
-            System.Diagnostics.Debug.WriteLine("Jacard(poly1, poly2)" + calculateJaccard(poly1, poly2));
-            System.Diagnostics.Debug.WriteLine("Jacard(poly1, poly3)" + calculateJaccard(poly1, poly3));
-            System.Diagnostics.Debug.WriteLine("Jacard(poly1, poly4)" + calculateJaccard(poly1, poly4));
 
-            // Test UTM Coordinates
+            // Clipper
+            List<IntPoint> polyA = new List<IntPoint>();
+            polyA.Add(new IntPoint(62, 135));
+            polyA.Add(new IntPoint(120, 208));
+            polyA.Add(new IntPoint(144, 188));
+            polyA.Add(new IntPoint(86, 115));
+            polyA.Add(new IntPoint(62, 135));
+            List<IntPoint> polyB = new List<IntPoint>();
+            polyB.Add(new IntPoint(65, 115));
+            polyB.Add(new IntPoint(120, 208));
+            polyB.Add(new IntPoint(144, 188));
+            polyB.Add(new IntPoint(86, 120));
+            polyB.Add(new IntPoint(65, 115));
+            List<IntPoint> polyC = new List<IntPoint>();
+            polyC.Add(new IntPoint(60, 95));
+            polyC.Add(new IntPoint(111, 190));
+            polyC.Add(new IntPoint(143, 178));
+            polyC.Add(new IntPoint(86, 120));
+            polyC.Add(new IntPoint(60, 95));
+            List<IntPoint> polyD = new List<IntPoint>();
+            polyD.Add(new IntPoint(50, 145));
+            polyD.Add(new IntPoint(124, 190));
+            polyD.Add(new IntPoint(143, 178));
+            polyD.Add(new IntPoint(90, 115));
+            polyD.Add(new IntPoint(50, 145));
+            // Print results
+            System.Diagnostics.Debug.WriteLine("NetTopologySuite Jaccard(poly1, poly1):" + calculateJaccard(poly1, poly1));
+            System.Diagnostics.Debug.WriteLine("ClipperLib Jaccard(poly1, poly1):" + PolygonUtil.Jaccard(polyA, polyA));
+            System.Diagnostics.Debug.WriteLine("NetTopologySuite Jacard(poly1, poly2)" + calculateJaccard(poly1, poly2));
+            System.Diagnostics.Debug.WriteLine("ClipperLib Jaccard(poly1, poly2)" + PolygonUtil.Jaccard(polyA, polyB));
+            System.Diagnostics.Debug.WriteLine("NetTopologySuite Jaccard(poly1, poly3)" + calculateJaccard(poly1, poly3));
+            System.Diagnostics.Debug.WriteLine("ClipperLib Jaccard(poly1, poly3)" + PolygonUtil.Jaccard(polyA, polyC));
+            System.Diagnostics.Debug.WriteLine("NetTopologySuite Jaccard(poly1, poly4)" + calculateJaccard(poly1, poly4));
+            System.Diagnostics.Debug.WriteLine("ClipperLib Jaccard(poly1, poly4)" + PolygonUtil.Jaccard(polyA, polyD));
+
+            //
+            // Test precsion accross implemenations using UTM Coordinates and Area of Union
+            //
             string testJsonFp = "C:\\Users\\todd\\Documents\\Visual Studio 2015\\Projects\\BEE\\Data\\SampleChips\\Chip1\\TestChip1.geojson";
             string truthJsonFp = "C:\\Users\\todd\\Documents\\Visual Studio 2015\\Projects\\BEE\\Data\\SampleChips\\Chip1\\TruthChip1.geojson";
             System.IO.StreamReader file = new System.IO.StreamReader(testJsonFp);
@@ -150,15 +191,29 @@ namespace BEE
             foreach (var testFeature in testFeatures.Features)
             {
                 Polygon testPoly = (Polygon)testFeature.Geometry;
-                foreach (var truthFeature in testFeatures.Features)
+                List<IntPoint> polyTest = new List<IntPoint>();
+                foreach (var coordinate in testPoly.Coordinates)
+                {
+                    polyTest.Add(new IntPoint(Convert.ToInt32(coordinate.X), Convert.ToInt32(coordinate.Y)));
+                }
+                foreach (var truthFeature in truthFeatures.Features)
                 {
                     Polygon truthPoly = (Polygon)truthFeature.Geometry;
-                    System.Diagnostics.Debug.WriteLine("testPoly:" + testPoly);
-                    System.Diagnostics.Debug.WriteLine("truthPoly:" + truthPoly);
-                    System.Diagnostics.Debug.WriteLine("Jacard(testPoly, truthPoly):" + calculateJaccard(testPoly, truthPoly));
-
+                    List<IntPoint> polyTruth = new List<IntPoint>();
+                    foreach (var coordinate in truthPoly.Coordinates)
+                    {
+                        polyTruth.Add(new IntPoint(Convert.ToInt32(coordinate.X), Convert.ToInt32(coordinate.Y)));
+                    }
+                    if (calculateJaccard(testPoly, truthPoly) != 0)
+                    {
+                        System.Diagnostics.Debug.WriteLine("testPoly:" + testPoly);
+                        System.Diagnostics.Debug.WriteLine("truthPoly:" + truthPoly);
+                        System.Diagnostics.Debug.WriteLine("NetTopologySuite Jaccard(testPoly, truthPoly): " + calculateJaccard(testPoly, truthPoly));
+                        System.Diagnostics.Debug.WriteLine("Clipper Jaccard(testPoly, truthPoly): " + PolygonUtil.Jaccard(polyTest, polyTruth));
+                    }
                 }
             }
+
         }
     }
 }
