@@ -78,7 +78,7 @@ if __name__ == "__main__":
                     lat1, lon1 = coord[0], coord[1]
                     print 'Original lat/long: ', lat1, '/', lon1
                     xPix, yPix = latLonToPixel(coord[0], coord[1], inputRaster)
-                    coord_arr.append((xPix, yPix))
+                    coord_arr.append((int(xPix), int(yPix)))
                     print 'Pixel x/y: ', xPix, '/', yPix
                     lat2, lon2 = pixelToLatLon(xPix, yPix, inputRaster)
                     print 'Converted lat/long: ', lat2, '/', lon2
