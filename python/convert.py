@@ -1,3 +1,6 @@
+# -*- coding: latin-1 -*-
+
+
 import os
 import csv
 import ogr
@@ -25,15 +28,15 @@ def latLonToPixel(lat, lon, inputRaster='', targetSR='', geomTransform=''):
         transform = geomTransform
 
     xOrigin = transform[0]
-    print xOrigin
+    # print xOrigin
     yOrigin = transform[3]
-    print yOrigin
+    # print yOrigin
     pixelWidth = transform[1]
-    print pixelWidth
+    # print pixelWidth
     pixelHeight = transform[5]
-    print pixelHeight
+    # print pixelHeight
     geom.Transform(coordTrans)
-    print geom.GetPoint()
+    # print geom.GetPoint()
     xPix = (geom.GetPoint()[0]-xOrigin)/pixelWidth
     yPix = (geom.GetPoint()[1]-yOrigin)/pixelHeight
 
@@ -126,15 +129,16 @@ if __name__ == "__main__":
     with open('rio_test.csv', 'wb') as csvfile:
         writer = csv.writer(csvfile, delimiter=',')
         writer.writerow(['ImageId', 'BuildingId', 'X', 'Y'])
+        max_buildings = 0
 
-        for image_id in range(1,4):
+        for image_id in range(1,6):
             truthJsonFp = ''.join(['Rio/rio_test_aoi',str(image_id),'.geojson'])
             inputRaster = ''.join(['Rio/rio_mosaic_clip_aoi',str(image_id),'.TIF'])
 
             print('reading truthJsonFp=%s' % truthJsonFp)
             # load GeoJSON file
             f = open(truthJsonFp)
-            truthFeatures = load(f)
+            truthFeatures = load(f,encoding='latin-1')
 
             # Convert
             xOriginPx, yOriginPx = latLonToPixel(-22.8930035, -43.6125347, inputRaster)
@@ -148,15 +152,20 @@ if __name__ == "__main__":
                     # print 'Original lat/long: ', lat1, '/', lon1
                     xPix, yPix = latLonToPixel(coord[1], coord[0], inputRaster)
                     # coord_arr.append((int(xPix), int(yPix)))
-                    print 'Pixel x/y: ', xPix, '/', yPix
-                    print 'Transformed Pixel x/y', xPix - xOriginPx, xPix - yOriginPx
-                    print 'Alternative Pixel x/y', latLonToPixel2(inputRaster, [[coord[1], coord[0]]])
+                    # print 'Pixel x/y: ', xPix, '/', yPix
+                    # print 'Transformed Pixel x/y', xPix - xOriginPx, xPix - yOriginPx
+                    # print 'Alternative Pixel x/y', latLonToPixel2(inputRaster, [[coord[1], coord[0]]])
                     # coord_arr.append([int(image_id), int(building_id), int(xPix), int(yPix)])
                     writer.writerow([int(image_id), int(building_id), int(xPix), int(yPix)])
                     # print 'Pixel x/y: ', xPix, '/', yPix
-                    lat2, lon2 = pixelToLatLon(xPix, yPix, inputRaster)
-                    print 'Re-converted lat/long: ', lat2, '/', lon2
+                    # lat2, lon2 = pixelToLatLon(xPix, yPix, inputRaster)
+#                    print 'Re-converted lat/long: ', lat2, '/', lon2
                 building_id += 1
 
-            print latLonToPixel2(inputRaster, [[-22.9557932591, -43.3411151695]])
-            print 'Origin in pixels: ', xOriginPx, yOriginPx
+            print('number of buildings = %d' % (building_id - 1))
+            if building_id > max_buildings:
+                max_buildings = building_id -1
+
+        print('max num buildings = %d' % max_buildings)
+            # print latLonToPixel2(inputRaster, [[-22.9557932591, -43.3411151695]])
+            # print 'Origin in pixels: ', xOriginPx, yOriginPx
