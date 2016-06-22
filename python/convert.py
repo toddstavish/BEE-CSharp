@@ -144,13 +144,13 @@ if __name__ == "__main__":
                 truthPoly = Polygon(truthFeature['geometry']['coordinates'][0])
                 # coord_arr = []
                 for coord in list(truthPoly.exterior.coords):
-                    lat1, lon1 = coord[0], coord[1]
+                    lat1, lon1 = coord[1], coord[0]
                     # print 'Original lat/long: ', lat1, '/', lon1
-                    xPix, yPix = latLonToPixel(coord[0], coord[1], inputRaster)
+                    xPix, yPix = latLonToPixel(coord[1], coord[0], inputRaster)
                     # coord_arr.append((int(xPix), int(yPix)))
                     print 'Pixel x/y: ', xPix, '/', yPix
                     print 'Transformed Pixel x/y', xPix - xOriginPx, xPix - yOriginPx
-                    print 'Alternative Pixel x/y', latLonToPixel2(inputRaster, [[coord[0], coord[1]]])
+                    print 'Alternative Pixel x/y', latLonToPixel2(inputRaster, [[coord[1], coord[0]]])
                     # coord_arr.append([int(image_id), int(building_id), int(xPix), int(yPix)])
                     writer.writerow([int(image_id), int(building_id), int(xPix), int(yPix)])
                     # print 'Pixel x/y: ', xPix, '/', yPix
