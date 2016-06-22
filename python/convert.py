@@ -89,7 +89,7 @@ def pixelToLatLon(xPix, yPix, inputRaster, targetSR=''):
     yCoord = (yPix*pixelHeight)+yOrigin
     geom.AddPoint(xCoord, yCoord)
     geom.Transform(coordTrans)
-    return (geom.GetY(), geom.GetX())
+    return (geom.GetX(), geom.GetY())
 
 # The following method translates given pixel locations into latitude/longitude locations on a given GEOTIF
 # INPUTS: geotifAddr - The file location of the GEOTIF
@@ -137,7 +137,7 @@ if __name__ == "__main__":
             truthFeatures = load(f)
 
             # Convert
-            xOriginPx, yOriginPx = latLonToPixel(-22.9557932591, -43.3411151695, inputRaster)
+            xOriginPx, yOriginPx = latLonToPixel(-22.8930035, -43.6125347, inputRaster)
 
             building_id = 1
             for truthFeature in truthFeatures['features']:
@@ -155,8 +155,8 @@ if __name__ == "__main__":
                     writer.writerow([int(image_id), int(building_id), int(xPix), int(yPix)])
                     # print 'Pixel x/y: ', xPix, '/', yPix
                     lat2, lon2 = pixelToLatLon(xPix, yPix, inputRaster)
-                    # print 'Converted lat/long: ', lat2, '/', lon2
+                    print 'Re-converted lat/long: ', lat2, '/', lon2
                 building_id += 1
-                
+
             print latLonToPixel2(inputRaster, [[-22.9557932591, -43.3411151695]])
             print 'Origin in pixels: ', xOriginPx, yOriginPx
