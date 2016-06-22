@@ -84,7 +84,6 @@ if __name__ == "__main__":
                     xPix, yPix = latLonToPixel(coord[0], coord[1], inputRaster)
                     # coord_arr.append([int(image_id), int(building_id), int(xPix), int(yPix)])
                     writer.writerow([int(image_id), int(building_id), int(xPix), int(yPix)])
-
                     # print 'Pixel x/y: ', xPix, '/', yPix
                     lat2, lon2 = pixelToLatLon(xPix, yPix, inputRaster)
                     # print 'Converted lat/long: ', lat2, '/', lon2
