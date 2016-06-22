@@ -61,6 +61,8 @@ def pixelToLatLon(xPix, yPix, inputRaster, targetSR=''):
 if __name__ == "__main__":
 
     with open('rio_test.csv', 'wb') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',')
+        writer.writerow(['ImageId', 'BuildingId', 'X', 'Y'])
 
         for image_id in range(1,4):
             truthJsonFp = ''.join(['Rio/rio_test_aoi',str(image_id),'.geojson'])
@@ -72,8 +74,6 @@ if __name__ == "__main__":
             truthFeatures = load(f)
 
             # Convert        
-            writer = csv.writer(csvfile, delimiter=',')
-            writer.writerow(['ImageId', 'BuildingId', 'X', 'Y'])
             building_id = 1
             for truthFeature in truthFeatures['features']:
                 truthPoly = Polygon(truthFeature['geometry']['coordinates'][0])
@@ -84,7 +84,6 @@ if __name__ == "__main__":
                     xPix, yPix = latLonToPixel(coord[0], coord[1], inputRaster)
                     # coord_arr.append([int(image_id), int(building_id), int(xPix), int(yPix)])
                     writer.writerow([int(image_id), int(building_id), int(xPix), int(yPix)])
-
                     # print 'Pixel x/y: ', xPix, '/', yPix
                     lat2, lon2 = pixelToLatLon(xPix, yPix, inputRaster)
                     # print 'Converted lat/long: ', lat2, '/', lon2
