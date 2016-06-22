@@ -33,6 +33,7 @@ def latLonToPixel(lat, lon, inputRaster='', targetSR='', geomTransform=''):
     pixelHeight = transform[5]
     print pixelHeight
     geom.Transform(coordTrans)
+    print geom.GetPoint()
     xPix = (geom.GetPoint()[0]-xOrigin)/pixelWidth
     yPix = (geom.GetPoint()[1]-yOrigin)/pixelHeight
 
@@ -136,6 +137,8 @@ if __name__ == "__main__":
             truthFeatures = load(f)
 
             # Convert
+            xOriginPx, yOriginPx = latLonToPixel(-22.9557932591, -43.3411151695, inputRaster)
+
             building_id = 1
             for truthFeature in truthFeatures['features']:
                 truthPoly = Polygon(truthFeature['geometry']['coordinates'][0])
@@ -146,6 +149,7 @@ if __name__ == "__main__":
                     xPix, yPix = latLonToPixel(coord[0], coord[1], inputRaster)
                     # coord_arr.append((int(xPix), int(yPix)))
                     print 'Pixel x/y: ', xPix, '/', yPix
+                    print 'Transformed Pixel x/y', xPix - xOriginPx, xPix - yOriginPx
                     print 'Alternative Pixel x/y', latLonToPixel2(inputRaster, [[coord[0], coord[1]]])
                     # coord_arr.append([int(image_id), int(building_id), int(xPix), int(yPix)])
                     writer.writerow([int(image_id), int(building_id), int(xPix), int(yPix)])
@@ -153,3 +157,6 @@ if __name__ == "__main__":
                     lat2, lon2 = pixelToLatLon(xPix, yPix, inputRaster)
                     # print 'Converted lat/long: ', lat2, '/', lon2
                 building_id += 1
+                
+            print latLonToPixel2(inputRaster, [[-22.9557932591, -43.3411151695]])
+            print 'Origin in pixels: ', xOriginPx, yOriginPx
