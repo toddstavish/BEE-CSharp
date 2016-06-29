@@ -24,7 +24,7 @@ Recall =  0.266666666667
 
 # Test 3 ->
 
-Notes: Reduced the number of buildings for the proposal.
+Notes: Reduced the number of buildings for the proposal. **Small number of proposals.**
 
 [Truth Polygon Map](https://github.com/toddstavish/BEE-CSharp/blob/master/data/Rio/rio_test_aoi3.geojson)
 
@@ -36,19 +36,19 @@ Recall =  0.4
 
 # Test 4 ->
 
-Notes: Smaller buildings are removed for the proposal.
+Notes: Smaller buildings are removed for the proposal. **Small number of proposals.**
 
 [Truth Polygon Map](https://github.com/toddstavish/BEE-CSharp/blob/master/data/Rio/rio_test_aoi4.geojson)
 
 [Test Polygon Map](https://github.com/toddstavish/BEE-CSharp/blob/master/data/Rio_Submission_Testing/Rio_sample_challenge_submission4.geojson)
 
-Precision =  0.416666666667
+Precision =  1.0
 
-Recall =  0.178571428571
+Recall =  0.428571428571
 
 # Test 5 ->
 
-Notes: Building are removed from truth for the proposal.
+Notes: Building are removed from truth for the proposal. **Small number of proposals.**
 
 [Truth Polygon Map](https://github.com/toddstavish/BEE-CSharp/blob/master/data/Rio/rio_test_aoi5.geojson)
 
@@ -60,15 +60,15 @@ Recall =  0.521739130435
 
 # Test 6 ->
 
-Notes: Root's handtruth vs DG's handtruth
+Notes: Root's handtruth vs DG's handtruth. **Small number of proposals.**
 
 [Truth Polygon Map](https://github.com/toddstavish/BEE-CSharp/blob/master/data/Rio/rio_test_aoi1.geojson)
 
 [Test Polygon Map](https://github.com/toddstavish/BEE-CSharp/blob/master/data/Rio_Hand_Truth_AOI1/AOI1_Hand1.geojson)
 
-Precision =  0.424242424242
+Precision =  1.0
 
-Recall =  0.48275862069
+Recall =  1.13793103448
 
 # Test 7 ->
 
@@ -120,12 +120,12 @@ Recall =  0.0
 
 # Test 11 ->
 
-Notes: Negative 2.5 buffer (proposed polygons are shrunken truth polygons)
+Notes: Negative 2.5 buffer (proposed polygons are shrunken truth polygons). **Small number of proposals.**
 
 [Truth Polygon Map](https://github.com/toddstavish/BEE-CSharp/blob/master/data/Rio/rio_test_aoi1.geojson)
 
 [Test Polygon Map](https://github.com/toddstavish/BEE-CSharp/blob/master/data/Rio_Hand_Truth_AOI1/Rio_test_aoi1_WGS84_Neg2p5mbuffer.geojson)
 
-Precision =  0.0
+Precision =  1.0
 
-Recall =  0.0
+Recall =  0.793103448276

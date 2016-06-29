@@ -1,5 +1,6 @@
 from __future__ import print_function, division
 from glob import glob
+from random import random
 from numpy import array
 from geojson import load
 from shapely.geometry import Polygon
@@ -19,6 +20,7 @@ def average_precision(truth_fp, test_fp):
                 pos_det += 1
     return pos_det/len(test_features['features'])
 
+
 def average_localization_error(truth_fp, test_fp):
     f = open(truth_fp)
     truth_features = load(f, encoding='latin-1')
@@ -33,6 +35,7 @@ def average_localization_error(truth_fp, test_fp):
                 pos_det += 1
     return pos_det/len(test_features['features'])
 
+
 def score(test_geojson_path, truth_geojson_path):
 
     # Define internal functions
@@ -46,35 +49,40 @@ def score(test_geojson_path, truth_geojson_path):
     test_polys = [polygonize(f) for f in test_features['features']]
     truth_polys = [polygonize(f) for f in truth_features['features']]
 
-    # Find detections using threshold/argmax for test polygons
-    detections = []
+    # Generate artifical confidences and sort
+    test_polys =  [[random(), test_poly] for test_poly in test_polys]
+    test_polys = sorted(test_polys, key=lambda l:l[0], reverse=True)
+
+    # Find detections using threshold/argmax/IoU for test polygons
+    true_pos_count = 0
     false_pos_count = 0
-    if len(test_polys) >= len(truth_polys):
+    if len(test_polys) >= len(truth_polys): # large number of proposals
         for test_poly in test_polys:
-            detect = None
             threshold = 0.5
             for truth_poly in truth_polys:
-                iou = IoU(test_poly, truth_poly)
+                iou = IoU(test_poly[1], truth_poly)
                 if iou >= threshold:
-                    detect = (test_poly, truth_poly, iou)
-                    threshold = iou
+                    true_pos_count += 1
+                    # U=U\Bk? how do we insert argmax?
+                    threshold = iou #theoretically we are sorted with highest confidence
                 elif iou != 0:
                     false_pos_count += 1
-            if detect:
-                detections.append(detect)
-    else:
+    else:                                   # small number of proposals
+        print('ALERT: Small number of proposals.')
         for test_poly in test_polys:
-            detect = None
-            threshold = 0.5
             for truth_poly in truth_polys:
-                iou = IoU(test_poly, truth_poly)
-                if iou >= threshold:
-                    detections.append((test_poly, truth_poly, iou))
-                elif iou != 0:
-                    false_pos_count += 1
-    false_neg_count = len(truth_polys) - len(detections)
-    print('Precision = ', len(detections)/(len(detections)+false_pos_count))
-    print('Recall = ', len(detections)/(len(detections)+false_neg_count))
+                iou = IoU(test_poly[1], truth_poly)
+                if iou > 0: # 0.5 threshold misses small contained polys
+                    true_pos_count += 1
+        false_pos_count = len(truth_polys) - len(test_polys) # this doesn't seem right
+    false_neg_count = len(truth_polys) - true_pos_count
+    print('True pos count: ', true_pos_count)
+    print('False pos count: ', false_neg_count)
+    print('False neg count: ', false_neg_count)
+    precision = true_pos_count/(true_pos_count+false_pos_count)
+    recall = true_pos_count/(true_pos_count+false_neg_count)
+    return (precision, recall)
+
 
 if __name__ == "__main__":
     # DG sample submissions
@@ -83,9 +91,10 @@ if __name__ == "__main__":
         test_fp = ''.join(['Rio_Submission_Testing/Rio_sample_challenge_submission',str(image_id),'.geojson'])
         print('truth_fp=%s' % truth_fp)
         print('test_fp=%s' % test_fp)
-        #print('Average precision: ', average_precision(truth_fp, test_fp))
-        #print('Average localization error: ', average_localization_error(truth_fp, test_fp))
-        score(test_fp, truth_fp)
+        precision, recall = score(test_fp, truth_fp)
+        print('Precision = ', precision)
+        print('Recall = ', recall)
+
 
     # CosmiQ sample submissions
     path = 'Rio_Hand_Truth_AOI1/*.geojson'
@@ -93,6 +102,6 @@ if __name__ == "__main__":
         truth_fp = 'Rio/rio_test_aoi1.geojson'
         print('truth_fp=%s' % truth_fp)
         print('test_fp=%s' % test_fp)
-        #print('Average precision: ', average_precision(truth_fp, test_fp))
-        #print('Average localization error: ', average_localization_error(truth_fp, test_fp))
-        score(test_fp, truth_fp)
+        precision, recall = score(test_fp, truth_fp)
+        print('Precision = ', precision)
+        print('Recall = ', recall)
