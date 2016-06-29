@@ -3,14 +3,14 @@ import numpy as np
 from geojson import load
 
 def compare_polys(poly_a, poly_b):
-    """Compares two polygons via the Jaccard distance metric.
+    """Compares two polygons via IoU.
 
     Input:
         poly_a: A Shapely polygon.
         poly_b: Another Shapely polygon.
 
     Returns:
-        The Jaccard distance between these two polygons.
+        The IoU between these two polygons.
     """
     intersection = poly_a.intersection(poly_b).area
     union = poly_a.union(poly_b).area

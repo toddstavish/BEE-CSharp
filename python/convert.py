@@ -1,6 +1,3 @@
-# -*- coding: latin-1 -*-
-
-
 import os
 import csv
 import ogr
