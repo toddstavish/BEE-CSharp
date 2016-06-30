@@ -5,9 +5,10 @@ from numpy import array
 from geojson import load
 from shapely.geometry import Polygon
 import numpy as np
-
+import os
 
 def average_precision(truth_fp, test_fp):
+    IoU = lambda p1, p2: p1.intersection(p2).area / p1.union(p2).area
     f = open(truth_fp)
     truth_features = load(f, encoding='latin-1')
     f = open(test_fp)
@@ -23,6 +24,7 @@ def average_precision(truth_fp, test_fp):
 
 
 def average_localization_error(truth_fp, test_fp):
+    IoU = lambda p1, p2: p1.intersection(p2).area / p1.union(p2).area
     f = open(truth_fp)
     truth_features = load(f, encoding='latin-1')
     f = open(test_fp)
@@ -60,7 +62,7 @@ def score(test_geojson_path, truth_geojson_path):
     B = len(truth_polys)
     M = len(test_polys)
     for test_poly in test_polys:
-        IoUs = map(lambda x:IoU(test_poly,x),truth_polys)
+        IoUs = map(lambda x:IoU(test_poly[1],x),truth_polys)
         maxIoU = max(IoUs)
         threshold = 0.5
         if maxIoU >= threshold:
@@ -80,9 +82,10 @@ def score(test_geojson_path, truth_geojson_path):
 
 if __name__ == "__main__":
     # DG sample submissions
+    baseDirectory = '/Users/dlindenbaum/Documents/CosmiQCode_09282015/BEE-CSharp/Data/'
     for image_id in range(1,6):
-        truth_fp = ''.join(['Rio/rio_test_aoi',str(image_id),'.geojson'])
-        test_fp = ''.join(['Rio_Submission_Testing/Rio_sample_challenge_submission',str(image_id),'.geojson'])
+        truth_fp = ''.join([baseDirectory, 'Rio/rio_test_aoi',str(image_id),'.geojson'])
+        test_fp = ''.join([baseDirectory, 'Rio_Submission_Testing/Rio_sample_challenge_submission',str(image_id),'.geojson'])
         print('truth_fp=%s' % truth_fp)
         print('test_fp=%s' % test_fp)
         precision, recall = score(test_fp, truth_fp)
