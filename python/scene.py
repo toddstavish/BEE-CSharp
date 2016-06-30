@@ -4,6 +4,7 @@ from random import random
 from numpy import array
 from geojson import load
 from shapely.geometry import Polygon
+import numpy as np
 
 
 def average_precision(truth_fp, test_fp):
@@ -56,28 +57,21 @@ def score(test_geojson_path, truth_geojson_path):
     # Find detections using threshold/argmax/IoU for test polygons
     true_pos_count = 0
     false_pos_count = 0
-    if len(test_polys) >= len(truth_polys): # large number of proposals
-        for test_poly in test_polys:
-            threshold = 0.5
-            for truth_poly in truth_polys:
-                iou = IoU(test_poly[1], truth_poly)
-                if iou >= threshold:
-                    true_pos_count += 1
-                    # U=U\Bk? how do we insert argmax?
-                    threshold = iou #theoretically we are sorted with highest confidence
-                elif iou != 0:
-                    false_pos_count += 1
-    else:                                   # small number of proposals
-        print('ALERT: Small number of proposals.')
-        for test_poly in test_polys:
-            for truth_poly in truth_polys:
-                iou = IoU(test_poly[1], truth_poly)
-                if iou > 0: # 0.5 threshold misses small contained polys
-                    true_pos_count += 1
-        false_pos_count = len(truth_polys) - len(test_polys) # this doesn't seem right
-    false_neg_count = len(truth_polys) - true_pos_count
+    B = len(truth_polys)
+    M = len(test_polys)
+    for test_poly in test_polys:
+        IoUs = map(lambda x:IoU(test_poly,x),truth_polys)
+        maxIoU = max(IoUs)
+        threshold = 0.5
+        if maxIoU >= threshold:
+            true_pos_count += 1
+            # U=U\Bk? how do we insert argmax?
+            del truth_polys[np.argmax(IoUs)]
+        else:
+            false_pos_count += 1
+    false_neg_count = B - true_pos_count
     print('True pos count: ', true_pos_count)
-    print('False pos count: ', false_neg_count)
+    print('False pos count: ', false_pos_count)
     print('False neg count: ', false_neg_count)
     precision = true_pos_count/(true_pos_count+false_pos_count)
     recall = true_pos_count/(true_pos_count+false_neg_count)
