@@ -82,10 +82,10 @@ def score(test_geojson_path, truth_geojson_path):
 
 if __name__ == "__main__":
     # DG sample submissions
-    baseDirectory = '/Users/dlindenbaum/Documents/CosmiQCode_09282015/BEE-CSharp/Data/'
+    #baseDirectory = '/Users/dlindenbaum/Documents/CosmiQCode_09282015/BEE-CSharp/Data/'
     for image_id in range(1,6):
-        truth_fp = ''.join([baseDirectory, 'Rio/rio_test_aoi',str(image_id),'.geojson'])
-        test_fp = ''.join([baseDirectory, 'Rio_Submission_Testing/Rio_sample_challenge_submission',str(image_id),'.geojson'])
+        truth_fp = ''.join(['Rio/rio_test_aoi',str(image_id),'.geojson'])
+        test_fp = ''.join(['Rio_Submission_Testing/Rio_sample_challenge_submission',str(image_id),'.geojson'])
         print('truth_fp=%s' % truth_fp)
         print('test_fp=%s' % test_fp)
         precision, recall = score(test_fp, truth_fp)
