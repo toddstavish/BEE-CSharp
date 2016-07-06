@@ -110,7 +110,7 @@ def createMarkupFile(fileSavePath, precisionList, recallList, f1ScoreList, pathL
     for idx in sort_index:
         target.write('# Test {} ->\n'.format(testCount))
         target.write('## [Test Polygon Map]({})\n'.format(os.path.join(gitHubPath, pathList[idx])))
-        target.write('F1Score = {}\n'.format(precisionList[idx]))
+        target.write('F1Score = {}\n'.format(f1ScoreList[idx]))
         target.write('Precision = {}\n'.format(precisionList[idx]))
         target.write('Recall = {}\n'.format(recallList[idx]))
         testCount=testCount+1
