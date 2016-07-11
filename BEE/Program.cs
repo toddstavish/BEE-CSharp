@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 using GeoAPI.Geometries;
@@ -63,10 +64,13 @@ namespace BEE
             testPolys = pairs.Select(b => b.Item2).ToList();
         }
 
-        public static void score(List<Polygon> testPolys, List<Polygon> truthPolys, out double precision, out double recall)
+        public static void score(List<Polygon> testPolys, List<Polygon> truthPolys, out double precision, out double recall, out int truePosCount, out int falsePosCount, out int falseNegCount)
         {
-            int truePosCount = 0;
-            int falsePosCount = 0;
+            recall = 0.0;
+            precision = 0.0;
+            truePosCount = 0;
+            falsePosCount = 0;
+            falseNegCount = 0;
 
             int B = truthPolys.Count;
             int M = testPolys.Count;
@@ -86,7 +90,7 @@ namespace BEE
                     falsePosCount += 1;
                 }
             }
-            int falseNegCount = B - truePosCount;
+            falseNegCount = B - truePosCount;
             System.Diagnostics.Debug.WriteLine("Num truths: " + B);
             System.Diagnostics.Debug.WriteLine("Num proposals: " + M);
             System.Diagnostics.Debug.WriteLine("True pos count: " + truePosCount);
@@ -98,20 +102,70 @@ namespace BEE
 
         static void Main(string[] args)
         {
-
-            // Test precsion accross implemenations using UTM Coordinates and Area of Union
-            string testJsonFp = "C:\\Users\\todd\\Documents\\Visual Studio 2015\\Projects\\BEE\\Data\\SampleChips\\Chip1\\TestChip1.geojson";
-            string truthJsonFp = "C:\\Users\\todd\\Documents\\Visual Studio 2015\\Projects\\BEE\\Data\\SampleChips\\Chip1\\TruthChip1.geojson";
+            string testFP;
+            string truthFP;
+            double recall = 0;
+            double precision = 0;
+            int truePosCount = 0;
+            int falsePosCount = 0;
+            int falseNegCount = 0;
             List<Polygon> testPolys;
             List<Polygon> truthPolys;
-            loadSortedPolygons(testJsonFp, truthJsonFp, out testPolys, out truthPolys);
-            double precision;
-            double recall;
-            score(testPolys, truthPolys, out precision, out recall);
-            System.Diagnostics.Debug.WriteLine("Precision: " + precision);
-            System.Diagnostics.Debug.WriteLine("Recall:  " + recall);
-            double F1score = precision * recall / (precision + recall);
-            System.Diagnostics.Debug.WriteLine("F1:  " + F1score);
+            List<int> truePosCounts = new List<int>();
+            List<int> falsePosCounts = new List<int>();
+            List<int> falseNegCounts = new List<int>();
+            string baseDir = "C:\\Users\\todd\\Documents\\Visual Studio 2015\\Projects\\BEE\\Data\\";
+            foreach (var imageID in Enumerable.Range(1, 5))
+            {
+                truthFP = baseDir + "Rio\\rio_test_aoi" + imageID.ToString() + ".geojson";
+                testFP = baseDir + "Rio_Submission_Testing\\Rio_sample_challenge_submission" + imageID.ToString() + ".geojson";
+                System.Diagnostics.Debug.WriteLine("truthFP: " + truthFP);
+                System.Diagnostics.Debug.WriteLine("testFP: " + testFP);
+                loadSortedPolygons(testFP, truthFP, out testPolys, out truthPolys);
+                score(testPolys, truthPolys, out precision, out recall, out truePosCount, out falsePosCount, out falseNegCount);
+                System.Diagnostics.Debug.WriteLine("Precision: " + precision);
+                System.Diagnostics.Debug.WriteLine("Recall:  " + recall);
+                truePosCounts.Add(truePosCount);
+                falsePosCounts.Add(falsePosCount);
+                falseNegCounts.Add(falseNegCount);
+            }
+
+
+            truthFP = baseDir + "Rio\\rio_test_aoi1.geojson";
+            testFP = baseDir + "Rio_Hand_Truth_AOI1\\";
+            foreach (var testFile in Directory.GetFiles(testFP, "*.geojson"))
+            {
+                System.Diagnostics.Debug.WriteLine("truthFP: " + truthFP);
+                System.Diagnostics.Debug.WriteLine("testFP: " + testFile);
+                loadSortedPolygons(testFile, truthFP, out testPolys, out truthPolys);
+                score(testPolys, truthPolys, out precision, out recall, out truePosCount, out falsePosCount, out falseNegCount);
+                System.Diagnostics.Debug.WriteLine("Precision: " + precision);
+                System.Diagnostics.Debug.WriteLine("Recall:  " + recall);
+                truePosCounts.Add(truePosCount);
+                falsePosCounts.Add(falsePosCount);
+                falseNegCounts.Add(falseNegCount);
+            }
+
+            truthFP = baseDir + "Rio\\rio_test_aoi2.geojson";
+            testFP = baseDir + "Rio_Submission_Testing_CQWUnit\\";
+            foreach (var testFile in Directory.GetFiles(testFP, "*.geojson"))
+            {
+                System.Diagnostics.Debug.WriteLine("truthFP: " + truthFP);
+                System.Diagnostics.Debug.WriteLine("testFP: " + testFile);
+                loadSortedPolygons(testFile, truthFP, out testPolys, out truthPolys);
+                score(testPolys, truthPolys, out precision, out recall, out truePosCount, out falsePosCount, out falseNegCount);
+                System.Diagnostics.Debug.WriteLine("Precision: " + precision);
+                System.Diagnostics.Debug.WriteLine("Recall:  " + recall);
+                truePosCounts.Add(truePosCount);
+                falsePosCounts.Add(falsePosCount);
+                falseNegCounts.Add(falseNegCount);
+            }
+            double precisionAll = Convert.ToDouble(truePosCounts.Sum()) / Convert.ToDouble(truePosCounts.Sum() + falsePosCounts.Sum());
+            double recallAll = Convert.ToDouble(truePosCounts.Sum()) / Convert.ToDouble(truePosCounts.Sum() + falseNegCounts.Sum());
+            double F1score = precisionAll * recallAll / (precisionAll + recallAll);
+            System.Diagnostics.Debug.WriteLine("Overall Precision: " + precision);
+            System.Diagnostics.Debug.WriteLine("Overall Recall:  " + recall);
+            System.Diagnostics.Debug.WriteLine("Overall F1:  " + F1score);
         }
     }
 }
