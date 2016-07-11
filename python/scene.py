@@ -54,12 +54,16 @@ def score(test_polys, truth_polys):
     print('False neg count: ', false_neg_count)
     precision = true_pos_count/(true_pos_count+false_pos_count)
     recall = true_pos_count/(true_pos_count+false_neg_count)
-    return precision, recall
+    return precision, recall, true_pos_count, false_pos_count, false_neg_count
 
 
 if __name__ == "__main__":
     precisions = []
     recalls = []
+    true_pos_counts = []
+    false_pos_counts = []
+    false_neg_counts = []
+
     # DG sample submissions
     for image_id in range(1,6):
         truth_fp = ''.join(['Rio/rio_test_aoi',str(image_id),'.geojson'])
@@ -67,11 +71,14 @@ if __name__ == "__main__":
         print('truth_fp=%s' % truth_fp)
         print('test_fp=%s' % test_fp)
         test_polys, truth_polys = load_sorted_polygons(test_fp, truth_fp)
-        precision, recall = score(test_polys, truth_polys)
+        precision, recall, true_pos_count, false_pos_count, false_neg_count= score(test_polys, truth_polys)
         print('Score Precision = ', precision)
         print('Score Recall = ', recall)
         precisions.append(precision)
         recalls.append(recall)
+        true_pos_counts.append(true_pos_count)
+        false_pos_counts.append(false_pos_count)
+        false_neg_counts.append(false_neg_count)
 
     # CosmiQ sample submissions 1
     path = 'Rio_Hand_Truth_AOI1/*.geojson'
@@ -80,11 +87,14 @@ if __name__ == "__main__":
         print('truth_fp=%s' % truth_fp)
         print('test_fp=%s' % test_fp)
         test_polys, truth_polys = load_sorted_polygons(test_fp, truth_fp)
-        precision, recall = score(test_polys, truth_polys)
+        precision, recall, true_pos_count, false_pos_count, false_neg_count = score(test_polys, truth_polys)
         print('Score Precision = ', precision)
         print('Score Recall = ', recall)
         precisions.append(precision)
         recalls.append(recall)
+        true_pos_counts.append(true_pos_count)
+        false_pos_counts.append(false_pos_count)
+        false_neg_counts.append(false_neg_count)
 
     # CosmiQ sample submissions 2
     path = 'Rio_Submission_Testing_CQWUnit/rio_test_aoi2*'
@@ -93,15 +103,24 @@ if __name__ == "__main__":
         print('truth_fp=%s' % truth_fp)
         print('test_fp=%s' % test_fp)
         test_polys, truth_polys = load_sorted_polygons(test_fp, truth_fp)
-        precision, recall = score(test_polys, truth_polys)
+        precision, recall, true_pos_count, false_pos_count, false_neg_count = score(test_polys, truth_polys)
         print('Score Precision = ', precision)
         print('Score Recall = ', recall)
         precisions.append(precision)
         recalls.append(recall)
+        true_pos_counts.append(true_pos_count)
+        false_pos_counts.append(false_pos_count)
+        false_neg_counts.append(false_neg_count)
 
     precision_avg = sum(precisions)/len(precisions)
     recall_avg = sum(precisions)/len(precisions)
-    F1score  = precision_avg*recall_avg/(precision_avg+recall_avg)
+    F1score_avg  = precision_avg*recall_avg/(precision_avg+recall_avg)
+    precision_all = sum(true_pos_counts)/(sum(true_pos_counts)+sum(false_pos_counts))
+    recall_all = sum(true_pos_counts)/(sum(true_pos_counts)+sum(false_neg_counts))
+    F1score_all  = precision_all*recall_all/(precision_all+recall_all)
     print('Average precision: ', precision_avg)
     print('Average recall: ', recall_avg)
-    print('F1 Score: ', F1score)
+    print('Average F1 Score: ', F1score_avg)
+    print('All precision: ', precision_all)
+    print('All recall: ', recall_all)
+    print('All F1 Score: ', F1score_all)
