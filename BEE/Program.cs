@@ -79,8 +79,8 @@ namespace BEE
             foreach (var testPoly in testPolys)
             {
                 IEnumerable<double> IoUs = truthPolys.Select(i => iou(testPoly, i));
-                double maxIoU = IoUs.DefaultIfEmpty(0).Max(); // DefaultIfEmpty is for dupes -
-                if (maxIoU >= threshold)                      // see rio_test_aoi2_Duplicates_Last3Features.geojson
+                double maxIoU = IoUs.DefaultIfEmpty(0).Max();
+                if (maxIoU >= threshold)
                 {
                     truePosCount += 1;
                     truthPolys.RemoveAt(argMax(IoUs.ToArray()));
