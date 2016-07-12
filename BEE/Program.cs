@@ -79,7 +79,7 @@ namespace BEE
             foreach (var testPoly in testPolys)
             {
                 IEnumerable<double> IoUs = truthPolys.Select(i => iou(testPoly, i));
-                double maxIoU = IoUs.Max();
+                double maxIoU = IoUs.Max(); // Assumes duplicate checkking elswhere
                 if (maxIoU >= threshold)
                 {
                     truePosCount += 1;
@@ -163,8 +163,8 @@ namespace BEE
             double precisionAll = Convert.ToDouble(truePosCounts.Sum()) / Convert.ToDouble(truePosCounts.Sum() + falsePosCounts.Sum());
             double recallAll = Convert.ToDouble(truePosCounts.Sum()) / Convert.ToDouble(truePosCounts.Sum() + falseNegCounts.Sum());
             double F1score = precisionAll * recallAll / (precisionAll + recallAll);
-            System.Diagnostics.Debug.WriteLine("Overall Precision: " + precision);
-            System.Diagnostics.Debug.WriteLine("Overall Recall:  " + recall);
+            System.Diagnostics.Debug.WriteLine("Overall Precision: " + precisionAll);
+            System.Diagnostics.Debug.WriteLine("Overall Recall:  " + recallAll);
             System.Diagnostics.Debug.WriteLine("Overall F1:  " + F1score);
         }
     }
