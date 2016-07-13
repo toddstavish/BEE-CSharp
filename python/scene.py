@@ -7,68 +7,30 @@ from shapely.geometry import Polygon
 import numpy as np
 import os
 
-def average_precision(truth_fp, test_fp):
-    IoU = lambda p1, p2: p1.intersection(p2).area / p1.union(p2).area
-    f = open(truth_fp)
-    truth_features = load(f, encoding='latin-1')
-    f = open(test_fp)
-    test_features = load(f, encoding='latin-1')
-    pos_det = 0
-    for truth_feature in truth_features['features']:
-        truth_poly = Polygon(truth_feature['geometry']['coordinates'][0])
-        for test_feature in test_features['features']:
-            test_poly = Polygon(test_feature['geometry']['coordinates'][0])
-            if test_poly.intersects(truth_poly):
-                pos_det += 1
-    return pos_det/len(test_features['features'])
 
+def load_sorted_polygons(test_geojson_path, truth_geojson_path):
 
-def average_localization_error(truth_fp, test_fp):
-    IoU = lambda p1, p2: p1.intersection(p2).area / p1.union(p2).area
-    f = open(truth_fp)
-    truth_features = load(f, encoding='latin-1')
-    f = open(test_fp)
-    test_features = load(f, encoding='latin-1')
-    pos_det = 0
-    for truth_feature in truth_features['features']:
-        truth_poly = Polygon(truth_feature['geometry']['coordinates'][0])
-        for test_feature in test_features['features']:
-            test_poly = Polygon(test_feature['geometry']['coordinates'][0])
-            if 0 < IoU(test_poly, truth_poly) < 0.5:
-                pos_det += 1
-    return pos_det/len(test_features['features'])
+    # Define internal functions
+    polygonize = lambda feature: Polygon(feature['geometry']['coordinates'][0])
 
-def getPolys(geojson_path):
-    polyList = []
-    features = load(open(geojson_path), encoding='latin-1')
-    for f in features['features']:
-        geometry = f['geometry']['coordinates'][0]
-        polyType = f['geometry']['type']
+    # Convert geojson files of features/geometries to arrays of polygons
+    test_features = load(open(test_geojson_path), encoding='latin-1')
+    truth_features = load(open(truth_geojson_path), encoding='latin-1')
+    test_polys = [polygonize(f) for f in test_features['features']]
+    truth_polys = [polygonize(f) for f in truth_features['features']]
 
-        if geometry:
-            if polyType == 'Polygon':
-                poly=Polygon(geometry)
-                polyList.append(poly)
+    # Generate artifical confidences and sort [condidences should be user
+    # supplied or presorted]
+    test_polys =  [[random(), test_poly] for test_poly in test_polys]
+    test_polys = sorted(test_polys, key=lambda l:l[0], reverse=True)
 
-    return polyList
+    return test_polys, truth_polys
 
-def score(test_geojson_path, truth_geojson_path):
+def score(test_polys, truth_polys):
 
     # Define internal functions
     IoU = lambda p1, p2: p1.intersection(p2).area/p1.union(p2).area
     argmax = lambda iterable, func: max(iterable, key=func)
-    polygonize = lambda feature: Polygon(feature['geometry']['coordinates'][0])
-
-    # Convert geojson files of features/geometries to arrays of polygons
-    #test_features = load(open(test_geojson_path), encoding='latin-1')
-    #truth_features = load(open(truth_geojson_path), encoding='latin-1')
-    #test_polys = [polygonize(f) for f in test_features['features']]
-    #truth_polys = [polygonize(f) for f in truth_features['features']]
-    test_polys = getPolys(test_geojson_path)
-    truth_polys = getPolys(truth_geojson_path)
-    # Generate artifical confidences and sort
-    test_polys =  [[random(), test_poly] for test_poly in test_polys]
-    test_polys = sorted(test_polys, key=lambda l:l[0], reverse=True)
 
     # Find detections using threshold/argmax/IoU for test polygons
     true_pos_count = 0
@@ -81,93 +43,84 @@ def score(test_geojson_path, truth_geojson_path):
         threshold = 0.5
         if maxIoU >= threshold:
             true_pos_count += 1
-            # U=U\Bk? how do we insert argmax?
             del truth_polys[np.argmax(IoUs)]
         else:
             false_pos_count += 1
     false_neg_count = B - true_pos_count
+    print('Num truths: ', B)
+    print('Num proposals: ', M)
     print('True pos count: ', true_pos_count)
     print('False pos count: ', false_pos_count)
     print('False neg count: ', false_neg_count)
-
-    if (true_pos_count+false_pos_count) != 0:
-        precision = true_pos_count/(true_pos_count+false_pos_count)
-    else:
-        precision = 0
-
-    if (true_pos_count+false_neg_count) !=0:
-        recall = true_pos_count/(true_pos_count+false_neg_count)
-    return (precision, recall)
-
-def createMarkupFile(fileSavePath, precisionList, recallList, f1ScoreList, pathList, truthFile, gitHubPath):
-    target = open(fileSavePath, 'w')
-    target.write('# Testing of {} ->\n'.format(truthFile))
-    target.write('## [Truth Polygon Map]({})\n'.format(os.path.join(gitHubPath,truthFile)))
-    target.write('Tests below sorted in order of F1Score \n')
-    target.write('\n')
-    sort_index = np.array(f1ScoreList).argsort()[::-1]
-    testCount = 1
-    for idx in sort_index:
-        target.write('# Test {} ->\n'.format(testCount))
-        target.write('## [Test Polygon Map]({})\n'.format(os.path.join(gitHubPath, pathList[idx])))
-        target.write('F1Score = {}\n'.format(f1ScoreList[idx]))
-        target.write('Precision = {}\n'.format(precisionList[idx]))
-        target.write('Recall = {}\n'.format(recallList[idx]))
-        testCount=testCount+1
-        target.write('\n')
-
-    target.close()
-
+    precision = true_pos_count/(true_pos_count+false_pos_count)
+    recall = true_pos_count/(true_pos_count+false_neg_count)
+    return precision, recall, true_pos_count, false_pos_count, false_neg_count
 
 
 if __name__ == "__main__":
+    precisions = []
+    recalls = []
+    true_pos_counts = []
+    false_pos_counts = []
+    false_neg_counts = []
+
     # DG sample submissions
-    #baseDirectory = '/Users/dlindenbaum/Documents/CosmiQCode_09282015/BEE-CSharp/Data/'
-    gitHubDirectory = 'https://github.com/toddstavish/BEE-CSharp/blob/master/data/'
-    evalFileName = 'Rio_Submission_Testing_CQW/rio_test_aoiResults.md'
     for image_id in range(1,6):
         truth_fp = ''.join(['Rio/rio_test_aoi',str(image_id),'.geojson'])
         test_fp = ''.join(['Rio_Submission_Testing/Rio_sample_challenge_submission',str(image_id),'.geojson'])
         print('truth_fp=%s' % truth_fp)
         print('test_fp=%s' % test_fp)
-        precision, recall = score(test_fp, truth_fp)
-        print('Precision = ', precision)
-        print('Recall = ', recall)
+        test_polys, truth_polys = load_sorted_polygons(test_fp, truth_fp)
+        precision, recall, true_pos_count, false_pos_count, false_neg_count= score(test_polys, truth_polys)
+        print('Score Precision = ', precision)
+        print('Score Recall = ', recall)
+        precisions.append(precision)
+        recalls.append(recall)
+        true_pos_counts.append(true_pos_count)
+        false_pos_counts.append(false_pos_count)
+        false_neg_counts.append(false_neg_count)
 
-
-    # CosmiQ sample submissions
+    # CosmiQ sample submissions 1
     path = 'Rio_Hand_Truth_AOI1/*.geojson'
     for test_fp in glob(path):
         truth_fp = 'Rio/rio_test_aoi1.geojson'
         print('truth_fp=%s' % truth_fp)
         print('test_fp=%s' % test_fp)
-        precision, recall = score(test_fp, truth_fp)
-        print('Precision = ', precision)
-        print('Recall = ', recall)
+        test_polys, truth_polys = load_sorted_polygons(test_fp, truth_fp)
+        precision, recall, true_pos_count, false_pos_count, false_neg_count = score(test_polys, truth_polys)
+        print('Score Precision = ', precision)
+        print('Score Recall = ', recall)
+        precisions.append(precision)
+        recalls.append(recall)
+        true_pos_counts.append(true_pos_count)
+        false_pos_counts.append(false_pos_count)
+        false_neg_counts.append(false_neg_count)
 
-    # CosmiQ sample submissions
-    path = 'Rio_Submission_Testing_CQW/rio_test_aoi2*'
-
-    precisionList = []
-    recallList    = []
-    f1ScoreList   = []
-    pathList      = glob(path)
-    for test_fp in pathList:
+    # CosmiQ sample submissions 2
+    path = 'Rio_Submission_Testing_CQWUnit/rio_test_aoi2*'
+    for test_fp in glob(path):
         truth_fp = 'Rio/rio_test_aoi2.geojson'
         print('truth_fp=%s' % truth_fp)
         print('test_fp=%s' % test_fp)
-        precision, recall = score(test_fp, truth_fp)
-        if precision+recall != 0:
-            F1score  = precision*recall/(precision+recall)
-        else:
-            F1score = 0
-        precisionList.append(precision)
-        recallList.append(recall)
-        f1ScoreList.append(F1score)
+        test_polys, truth_polys = load_sorted_polygons(test_fp, truth_fp)
+        precision, recall, true_pos_count, false_pos_count, false_neg_count = score(test_polys, truth_polys)
+        print('Score Precision = ', precision)
+        print('Score Recall = ', recall)
+        precisions.append(precision)
+        recalls.append(recall)
+        true_pos_counts.append(true_pos_count)
+        false_pos_counts.append(false_pos_count)
+        false_neg_counts.append(false_neg_count)
 
-        print('Precision = ', precision)
-        print('Recall = ', recall)
-
-    createMarkupFile(evalFileName, precisionList, recallList, f1ScoreList, pathList, truth_fp, gitHubDirectory)
-
-
+    precision_avg = sum(precisions)/len(precisions)
+    recall_avg = sum(precisions)/len(precisions)
+    F1score_avg  = precision_avg*recall_avg/(precision_avg+recall_avg)
+    precision_all = sum(true_pos_counts)/(sum(true_pos_counts)+sum(false_pos_counts))
+    recall_all = sum(true_pos_counts)/(sum(true_pos_counts)+sum(false_neg_counts))
+    F1score_all  = precision_all*recall_all/(precision_all+recall_all)
+    print('Average precision: ', precision_avg)
+    print('Average recall: ', recall_avg)
+    print('Average F1 Score: ', F1score_avg)
+    print('All precision: ', precision_all)
+    print('All recall: ', recall_all)
+    print('All F1 Score: ', F1score_all)
