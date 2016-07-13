@@ -124,13 +124,17 @@ def clipShapeFile(shapeSrc, outputFileName, polyToCut):
             outFeature.SetField(inLayerDefn.GetFieldDefn(i).GetNameRef(), inFeature.GetField(i))
 
         geom = inFeature.GetGeometryRef()
-
-        if geom.GetArea() == geom.Intersection(polyToCut).GetArea():
-            outFeature.SetField("partialBuilding", 0)
+        geomNew = geom.Intersection(polyToCut)
+        if geomNew:
+            if geom.GetArea() == geomNew.GetArea():
+                outFeature.SetField("partialBuilding", 0)
+            else:
+                outFeature.SetField("partialBuilding", 1)
         else:
             outFeature.SetField("partialBuilding", 1)
 
-        outFeature.SetGeometry(geom.Intersection(polyToCut))
+
+        outFeature.SetGeometry(geomNew)
         outLayer.CreateFeature(outFeature)
 
 
