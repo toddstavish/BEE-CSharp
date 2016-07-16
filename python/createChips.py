@@ -196,14 +196,20 @@ def cutChipFromMosaic(rasterFile, shapeFileSrc, outputDirectory='', outputPrefix
 if __name__ == '__main__':
     start = time.time()
 
-    rasterDirectory = '/Users/dlindenbaum/dataStorage/spacenet/mosaic_8Band/'
+    #rasterDirectory = '/Users/dlindenbaum/dataStorage/spacenet/mosaic_8Band/'
+    rasterDirectory = '/usr/local/share/spacenet/mosaic_8band/'
     rasterFile = '/Users/dlindenbaum/dataStorage/spacenet/mosaic_8band/013022232122.tif'
-    shapeFileSrc = '/Users/dlindenbaum/dataStorage/spacenet/comparison/AOI_EAST.geojson'
+    shapeFileSrc = '/usr/local/share/spacenet/AOI_Eastv1.geojson'
     outputDirectoryBase = '/Users/dlindenbaum/dataStorage/spacenet/clipv5Test/v1/'
-    for rasterFile in glob.glob(os.path.join(rasterDirectory, '*.tif')):
+    outputDirectoryBase = '/usr/local/share/spacenet/clipsTestAOIEast/'
+
+    rasterFileList = glob.glob(os.path.join(rasterDirectory, '*.tif'))
+    print rasterFileList
+    for rasterFile in rasterFileList:
+        print rasterFile
         outputDirectory = os.path.join(outputDirectoryBase, os.path.basename(rasterFile).replace(".tif", ''))
         cutChipFromMosaic(rasterFile, shapeFileSrc, outputDirectory=outputDirectory, outputPrefix='clip2_',
-                      clipSizeMX=100, clipSizeMY=100, numBands=8)
+                      clipSizeMX=1000, clipSizeMY=1000, numBands=8)
 
 
     stop = time.time()
