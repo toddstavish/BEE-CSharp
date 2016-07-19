@@ -162,7 +162,7 @@ def cutChipFromMosaic(rasterFile, shapeFileSrc, outlineSrc,outputDirectory='', o
     maxY = env[3]
 
     #return poly to WGS84
-    poly.Transform(transform_WGS84_To_UTM)
+    poly.Transform(transform_UTM_To_WGS84)
 
     shapeSrc = ogr.Open(shapeFileSrc)
     outline = ogr.Open(outlineSrc)
