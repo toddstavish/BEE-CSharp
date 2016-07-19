@@ -160,7 +160,7 @@ def cutChipFromMosaic(rasterFile, shapeFileSrc, outputDirectory='', outputPrefix
     minY = env[2]
     maxX = env[1]
     maxY = env[3]
-
+    poly.Transform(transform_UTM_To_WGS84)
     shapeSrc = ogr.Open(shapeFileSrc)
 
 
@@ -183,7 +183,7 @@ def cutChipFromMosaic(rasterFile, shapeFileSrc, outputDirectory='', outputPrefix
                              "{}".format(maxXCut),  "{}".format(maxYCut), rasterFile, outputFileName])
             outGeoJSon = outputFileName.replace('.tif', '.geojson')
 
-            clipShapeFile(shapeSrc, outputFileName, polyCut)
+            clipShapeFile(shapeSrc, outputFileName, polyCut.Intersection(poly))
             #subprocess.call(["ogr2ogr", "-f", "ESRI Shapefile",
             #                 "-spat", "{}".format(minXCut), "{}".format(minYCut),
             #                 "{}".format(maxXCut),  "{}".format(maxYCut), "-clipsrc", outGeoJSon, shapeFileSrc])
