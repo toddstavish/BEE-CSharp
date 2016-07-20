@@ -200,7 +200,7 @@ if __name__ == '__main__':
     rasterDirectory = '/usr/local/share/spacenet/mosaic/'
     rasterFile = '/Users/dlindenbaum/dataStorage/spacenet/mosaic_8band/013022232122.tif'
     shapeFileSrc = '/usr/local/share/spacenet/AOI_Eastv1.geojson'
-    outputDirectoryBase = '/Users/dlindenbaum/dataStorage/spacenet/clipv5Test/v1/'
+    outputDirectoryBase = '/Users/dlindenbaum/dataStorage/spacenet/clipv5Test/v2/'
     outputDirectoryBase = '/usr/local/share/spacenet/clipsTestAOIEast/mosiac'
 
     rasterFileList = glob.glob(os.path.join(rasterDirectory, '*.tif'))
