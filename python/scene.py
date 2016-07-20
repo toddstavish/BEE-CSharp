@@ -117,7 +117,7 @@ if __name__ == "__main__":
     F1score_avg  = precision_avg*recall_avg/(precision_avg+recall_avg)
     precision_all = sum(true_pos_counts)/(sum(true_pos_counts)+sum(false_pos_counts))
     recall_all = sum(true_pos_counts)/(sum(true_pos_counts)+sum(false_neg_counts))
-    F1score_all  = precision_all*recall_all/(precision_all+recall_all)
+    F1score_all  = 2 * precision_all*recall_all/(precision_all+recall_all)
     print('Average precision: ', precision_avg)
     print('Average recall: ', recall_avg)
     print('Average F1 Score: ', F1score_avg)
