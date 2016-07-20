@@ -138,6 +138,8 @@ def cutChipFromMosaic(rasterFile, shapeFileSrc, outlineSrc, outputDirectory='', 
     rasterFileBase = os.path.basename(rasterFile)
     if outputDirectory == "":
         outputDirectory = os.path.dirname(rasterFile)
+    if not os.path.exists(outputDirectory):
+        os.makedirs(outputDirectory)
     transform_WGS84_To_UTM, transform_UTM_To_WGS84, utm_cs = createUTMTransform(poly)
     poly.Transform(transform_WGS84_To_UTM)
     env = poly.GetEnvelope()
