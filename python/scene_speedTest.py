@@ -10,7 +10,11 @@ import time
 
 def polygonize(feature):
 
-    test = feature['geometry']['coordinates'][0]
+    if feature['geometry']['coordinates']:
+
+        test = feature['geometry']['coordinates'][0]
+    else:
+        test = []
 
     if test:
         if len(test)>3:
