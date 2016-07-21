@@ -12,7 +12,7 @@ def polygonize(feature):
     print(len(feature['geometry']['coordinates'][0]))
     test = feature['geometry']['coordinates'][0]
 
-    if test:
+    if len(test)>3:
         return Polygon(test)
     else:
         return 0
