@@ -20,7 +20,7 @@ def polygonize(feature):
 def load_sorted_polygons(test_geojson_path, truth_geojson_path):
 
     # Define internal functions
-    polygonize = lambda feature: Polygon(feature['geometry']['coordinates'][0])
+    #polygonize = lambda feature: Polygon(feature['geometry']['coordinates'][0])
 
     # Convert geojson files of features/geometries to arrays of polygons
     test_features = load(open(test_geojson_path), encoding='latin-1')
