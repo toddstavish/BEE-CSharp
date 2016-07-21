@@ -6,7 +6,7 @@ from geojson import load
 from shapely.geometry import Polygon
 import numpy as np
 import os
-
+import time
 
 def load_sorted_polygons(test_geojson_path, truth_geojson_path):
 
@@ -58,6 +58,8 @@ def score(test_polys, truth_polys):
 
 
 if __name__ == "__main__":
+
+    start = time.time()
     precisions = []
     recalls = []
     true_pos_counts = []
@@ -92,3 +94,8 @@ if __name__ == "__main__":
     print('All precision: ', precision_all)
     print('All recall: ', recall_all)
     print('All F1 Score: ', F1score_all)
+
+    stop = time.time()
+
+    print('Total Time to Process = {}'.format(stop-start))
+    print('Time per a guess  = {}'.format((stop-start)/len(geoJsonList)))
