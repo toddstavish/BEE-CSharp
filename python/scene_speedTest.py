@@ -52,8 +52,16 @@ def score(test_polys, truth_polys):
     print('True pos count: ', true_pos_count)
     print('False pos count: ', false_pos_count)
     print('False neg count: ', false_neg_count)
-    precision = true_pos_count/(true_pos_count+false_pos_count)
-    recall = true_pos_count/(true_pos_count+false_neg_count)
+    if true_pos_count+false_pos_count>0:
+        precision = true_pos_count/(true_pos_count+false_pos_count)
+    else:
+        precision = 0
+
+    if true_pos_count+false_neg_count>0:
+        recall = true_pos_count/(true_pos_count+false_neg_count)
+    else:
+        recall = 0
+        
     return precision, recall, true_pos_count, false_pos_count, false_neg_count
 
 
