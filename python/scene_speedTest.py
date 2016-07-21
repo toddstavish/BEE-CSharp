@@ -15,7 +15,7 @@ def polygonize(feature):
     if len(test)>3:
         return Polygon(test)
     else:
-        return 0
+        return []
 
 def load_sorted_polygons(test_geojson_path, truth_geojson_path):
 
@@ -25,8 +25,20 @@ def load_sorted_polygons(test_geojson_path, truth_geojson_path):
     # Convert geojson files of features/geometries to arrays of polygons
     test_features = load(open(test_geojson_path), encoding='latin-1')
     truth_features = load(open(truth_geojson_path), encoding='latin-1')
-    test_polys = [polygonize(f) for f in test_features['features']]
-    truth_polys = [polygonize(f) for f in truth_features['features']]
+    test_polys = []
+    for f in test_features['features']:
+        test = polygonize(f)
+        if test:
+            test_polys.append(test)
+    truth_polys=[]
+    for f in test_features['features']:
+        test = polygonize(f)
+        if test:
+            truth_polys.append(test)
+
+
+    #test_polys = [polygonize(f) for f in test_features['features']]
+    #truth_polys = [polygonize(f) for f in truth_features['features']]
 
     # Generate artifical confidences and sort [condidences should be user
     # supplied or presorted]
