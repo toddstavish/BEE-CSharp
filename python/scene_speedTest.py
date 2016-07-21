@@ -10,20 +10,35 @@ import time
 
 def polygonize(feature):
 
-    if feature['geometry']['coordinates']:
 
-        test = feature['geometry']['coordinates'][0]
-    else:
-        test = []
+    if feature:
 
-    if test:
-        if len(test)>3:
-            return Polygon(test)
+        if feature['geometry']:
+
+            if feature['geometry']['coordinates']:
+
+                if feature['geometry']['coordinates']:
+
+                    test = feature['geometry']['coordinates'][0]
+
+                    if test:
+                        if len(test)>3:
+                            return Polygon(test)
+                        else:
+                            return []
+                    else:
+                        return []
+                else:
+                    return []
+
+            else:
+                return []
         else:
             return []
     else:
         return []
 
+    
 def load_sorted_polygons(test_geojson_path, truth_geojson_path):
 
     # Define internal functions
