@@ -38,7 +38,7 @@ def polygonize(feature):
     else:
         return []
 
-    
+
 def load_sorted_polygons(test_geojson_path, truth_geojson_path):
 
     # Define internal functions
@@ -119,7 +119,7 @@ if __name__ == "__main__":
 
     geoJsonList = glob('/usr/local/share/spacenet/combinedClipTest/*.geojson')
 
-    for geoJsonFile in geoJsonList:
+    for geoJsonFile in geoJsonList[0:1000]:
         truth_fp = geoJsonFile
         test_fp = geoJsonFile
         print('truth_fp=%s' % truth_fp)
