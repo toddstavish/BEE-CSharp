@@ -8,6 +8,13 @@ import numpy as np
 import os
 import time
 
+def polygonize(feature):
+    test = Polygon(feature['geometry']['coordinates'][0]:
+    if test:
+        return test
+    else:
+        return 0
+
 def load_sorted_polygons(test_geojson_path, truth_geojson_path):
 
     # Define internal functions
@@ -61,7 +68,7 @@ def score(test_polys, truth_polys):
         recall = true_pos_count/(true_pos_count+false_neg_count)
     else:
         recall = 0
-        
+
     return precision, recall, true_pos_count, false_pos_count, false_neg_count
 
 
