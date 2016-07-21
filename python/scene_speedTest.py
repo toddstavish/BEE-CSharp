@@ -9,11 +9,14 @@ import os
 import time
 
 def polygonize(feature):
-    
+
     test = feature['geometry']['coordinates'][0]
 
-    if len(test)>3:
-        return Polygon(test)
+    if test:
+        if len(test)>3:
+            return Polygon(test)
+        else:
+            return []
     else:
         return []
 
