@@ -128,18 +128,18 @@ if __name__ == "__main__":
 
     with open('all_polygons_kaggleAll.csv', 'wb') as csvfile:
         writer = csv.writer(csvfile, delimiter=',')
-        writer.writerow(['ImageId', 'BuildingId', 'X', 'Y'])
+        writer.writerow(['ImageId', 'BuildingId', 'X', 'Y', 'InputRaster', 'InputGeoJson'])
         max_buildings = 0
         num_imgs_no_buildings = 0
 
-        imagefiles = []#os.listdir('image_chips/3band')
-        geojsonfiles = []#os.listdir('buildings/')
+        imagefiles = os.listdir('image_chips/3band')
+        geojsonfiles = os.listdir('buildings/')
         errors = []
         #truthJsonFp = '/Users/dlindenbaum/dataStorage/spacenet/testing/clip2_013022223130_mask_-43.6824092745_-22.9569020838.geojson'
         #inputRaster = '/Users/dlindenbaum/dataStorage/spacenet/testing/clip2_013022223130_mask_-43.6824092745_-22.9569020838_other.tif'
         for image_id in xrange(1):
-            #truthJsonFp = ''.join(['buildings/',geojsonfiles[image_id-1]])
-            #inputRaster = ''.join(['image_chips/3band/',imagefiles[image_id-1]])
+            truthJsonFp = ''.join(['buildings/',geojsonfiles[image_id-1]])
+            inputRaster = ''.join(['image_chips/3band/',imagefiles[image_id-1]])
 
             print('reading truthJsonFp=%s' % truthJsonFp)
             # load GeoJSON file
@@ -167,7 +167,7 @@ if __name__ == "__main__":
                     # print 'Transformed Pixel x/y', xPix - xOriginPx, xPix - yOriginPx
                     # print 'Alternative Pixel x/y', latLonToPixel2(inputRaster, [[coord[1], coord[0]]])
                     # coord_arr.append([int(image_id), int(building_id), int(xPix), int(yPix)])
-                    writer.writerow([int(image_id), int(building_id), int(xPix), int(yPix)])
+                    writer.writerow([int(image_id), int(building_id), int(xPix), int(yPix), inputRaster, truthJsonFp])
                     # print 'Pixel x/y: ', xPix, '/', yPix
                     # lat2, lon2 = pixelToLatLon(xPix, yPix, inputRaster)
 #                    print 'Re-converted lat/long: ', lat2, '/', lon2
