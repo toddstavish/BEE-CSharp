@@ -137,7 +137,7 @@ if __name__ == "__main__":
         errors = []
         #truthJsonFp = '/Users/dlindenbaum/dataStorage/spacenet/testing/clip2_013022223130_mask_-43.6824092745_-22.9569020838.geojson'
         #inputRaster = '/Users/dlindenbaum/dataStorage/spacenet/testing/clip2_013022223130_mask_-43.6824092745_-22.9569020838_other.tif'
-        for image_id in xrange(1):
+        for image_id in range(1,len(imagefiles)+1):
             truthJsonFp = ''.join(['buildings/',geojsonfiles[image_id-1]])
             inputRaster = ''.join(['image_chips/3band/',imagefiles[image_id-1]])
 
