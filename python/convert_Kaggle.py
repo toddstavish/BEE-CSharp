@@ -132,8 +132,8 @@ if __name__ == "__main__":
         max_buildings = 0
         num_imgs_no_buildings = 0
 
-        imagefiles = os.listdir('image_chips/3band')
-        geojsonfiles = os.listdir('buildings/')
+        imagefiles = sorted(os.listdir('image_chips/3band'))
+        geojsonfiles = sorted(os.listdir('buildings/'))
         errors = []
         #truthJsonFp = '/Users/dlindenbaum/dataStorage/spacenet/testing/clip2_013022223130_mask_-43.6824092745_-22.9569020838.geojson'
         #inputRaster = '/Users/dlindenbaum/dataStorage/spacenet/testing/clip2_013022223130_mask_-43.6824092745_-22.9569020838_other.tif'
