@@ -6,6 +6,7 @@ import numpy as np
 import subprocess
 import os
 import time
+import glob
 def utm_getZone(longitude):
     return (int(1+(longitude+180.0)/6.0))
 
@@ -149,6 +150,9 @@ def cutChipFromMosaic(rasterFile, shapeFileSrc, outputDirectory='', outputPrefix
     rasterFileBase = os.path.basename(rasterFile)
     if outputDirectory=="":
         outputDirectory=os.path.dirname(rasterFile)
+    if not os.path.exists(outputDirectory):
+        os.makedirs(outputDirectory)
+
     transform_WGS84_To_UTM, transform_UTM_To_WGS84, utm_cs = createUTMTransform(poly)
     poly.Transform(transform_WGS84_To_UTM)
     env = poly.GetEnvelope()
@@ -156,7 +160,7 @@ def cutChipFromMosaic(rasterFile, shapeFileSrc, outputDirectory='', outputPrefix
     minY = env[2]
     maxX = env[1]
     maxY = env[3]
-
+    poly.Transform(transform_UTM_To_WGS84)
     shapeSrc = ogr.Open(shapeFileSrc)
 
 
@@ -179,7 +183,7 @@ def cutChipFromMosaic(rasterFile, shapeFileSrc, outputDirectory='', outputPrefix
                              "{}".format(maxXCut),  "{}".format(maxYCut), rasterFile, outputFileName])
             outGeoJSon = outputFileName.replace('.tif', '.geojson')
 
-            clipShapeFile(shapeSrc, outputFileName, polyCut)
+            clipShapeFile(shapeSrc, outputFileName, polyCut.Intersection(poly))
             #subprocess.call(["ogr2ogr", "-f", "ESRI Shapefile",
             #                 "-spat", "{}".format(minXCut), "{}".format(minYCut),
             #                 "{}".format(maxXCut),  "{}".format(maxYCut), "-clipsrc", outGeoJSon, shapeFileSrc])
@@ -191,11 +195,21 @@ def cutChipFromMosaic(rasterFile, shapeFileSrc, outputDirectory='', outputPrefix
 
 if __name__ == '__main__':
     start = time.time()
+
+    #rasterDirectory = '/Users/dlindenbaum/dataStorage/spacenet/mosaic_8Band/'
+    rasterDirectory = '/usr/local/share/spacenet/mosaic/'
     rasterFile = '/Users/dlindenbaum/dataStorage/spacenet/mosaic_8band/013022232122.tif'
-    shapeFileSrc = '/Users/dlindenbaum/dataStorage/spacenet/comparison/AOI_EAST.geojson'
-    outputDirectory = '/Users/dlindenbaum/dataStorage/spacenet/clipv3Test'
-    cutChipFromMosaic(rasterFile, shapeFileSrc, outputDirectory=outputDirectory, outputPrefix='clip2_',
-                      clipSizeMX=100, clipSizeMY=100, numBands=8)
+    shapeFileSrc = '/usr/local/share/spacenet/AOI_Eastv1.geojson'
+    outputDirectoryBase = '/Users/dlindenbaum/dataStorage/spacenet/clipv5Test/v2/'
+    outputDirectoryBase = '/usr/local/share/spacenet/clipsTestAOIEast/mosiac'
+
+    rasterFileList = glob.glob(os.path.join(rasterDirectory, '*.tif'))
+    print rasterFileList
+    for rasterFile in rasterFileList:
+        print rasterFile
+        outputDirectory = os.path.join(outputDirectoryBase, os.path.basename(rasterFile).replace(".tif", ''))
+        cutChipFromMosaic(rasterFile, shapeFileSrc, outputDirectory=outputDirectory, outputPrefix='clip2_',
+                      clipSizeMX=1000, clipSizeMY=1000, numBands=8)
 
 
     stop = time.time()
