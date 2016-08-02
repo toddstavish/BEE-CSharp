@@ -229,7 +229,8 @@ if __name__ == '__main__':
 
 
     
-    outlineSrc = '/usr/local/share/spacenet/rioBuildings_08022016/Rio_AOI_OutLine_Combined/Rio_Outline_CombinedGeo.geojson  '
+    outlineSrc = '/usr/local/share/spacenet/rioBuildings_08022016/Rio_AOI_OutLine_Combined/Rio_Outline_CombinedGeo.geojson'
+
     buildingsSrc = '/usr/local/share/spacenet/rioBuildings_08022016/Rio_AOI_OutLine_Combined/Rio_Buildings_Combined_Geo.geojson'
     outdir = '/usr/local/share/spacenet/chips3band'
 
