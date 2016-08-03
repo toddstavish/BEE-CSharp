@@ -132,14 +132,14 @@ if __name__ == "__main__":
         max_buildings = 0
         num_imgs_no_buildings = 0
 
-        imagefiles = sorted(os.listdir('/home/moriarty/data/SpaceNet/image_chips/3band'))
-        geojsonfiles = sorted(os.listdir('/home/moriarty/data/SpaceNet/buildings/'))
+        imagefiles = sorted(os.listdir('/usr/local/share/spacenet/chips3band/'))
+        geojsonfiles = sorted(os.listdir('/usr/local/share/spacenet/chipsBuildings/'))
         errors = []
         #truthJsonFp = '/Users/dlindenbaum/dataStorage/spacenet/testing/clip2_013022223130_mask_-43.6824092745_-22.9569020838.geojson'
         #inputRaster = '/Users/dlindenbaum/dataStorage/spacenet/testing/clip2_013022223130_mask_-43.6824092745_-22.9569020838_other.tif'
         for image_id in range(1,len(imagefiles)+1):
-            truthJsonFp = ''.join(['/home/moriarty/data/SpaceNet/buildings/',geojsonfiles[image_id-1]])
-            inputRaster = ''.join(['/home/moriarty/data/SpaceNet/image_chips/3band/',imagefiles[image_id-1]])
+            truthJsonFp = ''.join(['/usr/local/share/spacenet/chipsBuildings/',geojsonfiles[image_id-1]])
+            inputRaster = ''.join(['/usr/local/share/spacenet/chips3band/',imagefiles[image_id-1]])
 
             print('reading truthJsonFp=%s' % truthJsonFp)
             # load GeoJSON file
