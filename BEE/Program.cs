@@ -162,7 +162,7 @@ namespace BEE
             }
             double precisionAll = Convert.ToDouble(truePosCounts.Sum()) / Convert.ToDouble(truePosCounts.Sum() + falsePosCounts.Sum());
             double recallAll = Convert.ToDouble(truePosCounts.Sum()) / Convert.ToDouble(truePosCounts.Sum() + falseNegCounts.Sum());
-            double F1score = precisionAll * recallAll / (precisionAll + recallAll);
+            double F1score = 2.0 * precisionAll * recallAll / (precisionAll + recallAll);
             System.Diagnostics.Debug.WriteLine("Overall Precision: " + precisionAll);
             System.Diagnostics.Debug.WriteLine("Overall Recall:  " + recallAll);
             System.Diagnostics.Debug.WriteLine("Overall F1:  " + F1score);
