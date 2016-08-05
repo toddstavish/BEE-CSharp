@@ -1,30 +1,38 @@
 from __future__ import print_function, division
 from glob import glob
 from random import random
+import os
 from numpy import array
 from geojson import load
 from shapely.geometry import Polygon
 import numpy as np
-import os
+import pandas as pd
 
+def polygonize(csv_path):
+    polys = []
+    polys_df = pd.read_csv(csv_path)
+    image_ids = set(polys_df['ImageId'].tolist())
+    for image_id in image_ids:
+        img_df = polys_df.loc[polys_df['ImageId'] == image_id]
+        building_ids = set(img_df['BuildingId'].tolist())
+        for building_id in building_ids:
+            if building_id != 0:
+                building_df = img_df.loc[img_df['BuildingId'] == building_id]
+                poly = zip(building_df['X'].astype(int), building_df['Y'].astype(int))
+                polys.append({'ImageId': image_id, 'BuildingId': building_id, 'poly': Polygon(poly)})
+            else:
+                polys.append({'ImageId': image_id, 'BuildingId': building_id, 'poly': Polygon()})
+    return polys
 
-def load_sorted_polygons(test_geojson_path, truth_geojson_path):
+def get_image_ids(csv_path):
+    polys_df = pd.read_csv(csv_path)
+    return set(polys_df['ImageId'].tolist())
 
-    # Define internal functions
-    polygonize = lambda feature: Polygon(feature['geometry']['coordinates'][0])
-
-    # Convert geojson files of features/geometries to arrays of polygons
-    test_features = load(open(test_geojson_path), encoding='latin-1')
-    truth_features = load(open(truth_geojson_path), encoding='latin-1')
-    test_polys = [polygonize(f) for f in test_features['features']]
-    truth_polys = [polygonize(f) for f in truth_features['features']]
-
-    # Generate artifical confidences and sort [condidences should be user
-    # supplied or presorted]
-    test_polys =  [[random(), test_poly] for test_poly in test_polys]
-    test_polys = sorted(test_polys, key=lambda l:l[0], reverse=True)
-
-    return test_polys, truth_polys
+def load_sorted_polygons(test_csv_path, truth_csv_path):
+    # Assumes -
+    # 1. Polygons are presorted for descending confindence.
+    # 2. Chips with no buildings assign zero for the BuildingId
+    return polygonize(test_csv_path), polygonize(truth_csv_path)
 
 def score(test_polys, truth_polys):
 
@@ -38,7 +46,7 @@ def score(test_polys, truth_polys):
     B = len(truth_polys)
     M = len(test_polys)
     for test_poly in test_polys:
-        IoUs = map(lambda x:IoU(test_poly[1],x),truth_polys)
+        IoUs = map(lambda x:IoU(test_poly,x),truth_polys)
         maxIoU = max(IoUs)
         threshold = 0.5
         if maxIoU >= threshold:
@@ -47,80 +55,42 @@ def score(test_polys, truth_polys):
         else:
             false_pos_count += 1
     false_neg_count = B - true_pos_count
+    precision = true_pos_count/(true_pos_count+false_pos_count)
+    recall = true_pos_count/(true_pos_count+false_neg_count)
     print('Num truths: ', B)
     print('Num proposals: ', M)
     print('True pos count: ', true_pos_count)
     print('False pos count: ', false_pos_count)
     print('False neg count: ', false_neg_count)
-    precision = true_pos_count/(true_pos_count+false_pos_count)
-    recall = true_pos_count/(true_pos_count+false_neg_count)
-    return precision, recall, true_pos_count, false_pos_count, false_neg_count
+    print('Precision: ', precision)
+    print('Recall: ', recall)
+    return true_pos_count, false_pos_count, false_neg_count
 
 
 if __name__ == "__main__":
-    precisions = []
-    recalls = []
     true_pos_counts = []
     false_pos_counts = []
     false_neg_counts = []
 
-    # DG sample submissions
-    for image_id in range(1,6):
-        truth_fp = ''.join(['Rio/rio_test_aoi',str(image_id),'.geojson'])
-        test_fp = ''.join(['Rio_Submission_Testing/Rio_sample_challenge_submission',str(image_id),'.geojson'])
-        print('truth_fp=%s' % truth_fp)
-        print('test_fp=%s' % test_fp)
-        test_polys, truth_polys = load_sorted_polygons(test_fp, truth_fp)
-        precision, recall, true_pos_count, false_pos_count, false_neg_count= score(test_polys, truth_polys)
-        print('Score Precision = ', precision)
-        print('Score Recall = ', recall)
-        precisions.append(precision)
-        recalls.append(recall)
+    test_fp = 'Submission_1.0.csv'
+    truth_fp = 'Solution.csv'
+    prop_polys, sol_polys = load_sorted_polygons(test_fp, truth_fp)
+
+    test_image_ids = get_image_ids(test_fp)
+    for image_id in test_image_ids:
+        test_polys = []
+        truth_polys = []
+        image_test_polys = [item for item in prop_polys if item["ImageId"] == image_id]
+        for poly in image_test_polys:
+            test_polys.append(poly['poly'])
+        image_truth_polys = [item for item in sol_polys if item["ImageId"] == image_id]
+        for poly in image_truth_polys:
+            truth_polys.append(poly['poly'])
+        true_pos_count, false_pos_count, false_neg_count = score(test_polys, truth_polys)
         true_pos_counts.append(true_pos_count)
         false_pos_counts.append(false_pos_count)
         false_neg_counts.append(false_neg_count)
-
-    # CosmiQ sample submissions 1
-    path = 'Rio_Hand_Truth_AOI1/*.geojson'
-    for test_fp in glob(path):
-        truth_fp = 'Rio/rio_test_aoi1.geojson'
-        print('truth_fp=%s' % truth_fp)
-        print('test_fp=%s' % test_fp)
-        test_polys, truth_polys = load_sorted_polygons(test_fp, truth_fp)
-        precision, recall, true_pos_count, false_pos_count, false_neg_count = score(test_polys, truth_polys)
-        print('Score Precision = ', precision)
-        print('Score Recall = ', recall)
-        precisions.append(precision)
-        recalls.append(recall)
-        true_pos_counts.append(true_pos_count)
-        false_pos_counts.append(false_pos_count)
-        false_neg_counts.append(false_neg_count)
-
-    # CosmiQ sample submissions 2
-    path = 'Rio_Submission_Testing_CQWUnit/rio_test_aoi2*'
-    for test_fp in glob(path):
-        truth_fp = 'Rio/rio_test_aoi2.geojson'
-        print('truth_fp=%s' % truth_fp)
-        print('test_fp=%s' % test_fp)
-        test_polys, truth_polys = load_sorted_polygons(test_fp, truth_fp)
-        precision, recall, true_pos_count, false_pos_count, false_neg_count = score(test_polys, truth_polys)
-        print('Score Precision = ', precision)
-        print('Score Recall = ', recall)
-        precisions.append(precision)
-        recalls.append(recall)
-        true_pos_counts.append(true_pos_count)
-        false_pos_counts.append(false_pos_count)
-        false_neg_counts.append(false_neg_count)
-
-    precision_avg = sum(precisions)/len(precisions)
-    recall_avg = sum(precisions)/len(precisions)
-    F1score_avg  = precision_avg*recall_avg/(precision_avg+recall_avg)
-    precision_all = sum(true_pos_counts)/(sum(true_pos_counts)+sum(false_pos_counts))
-    recall_all = sum(true_pos_counts)/(sum(true_pos_counts)+sum(false_neg_counts))
-    F1score_all  = 2 * precision_all*recall_all/(precision_all+recall_all)
-    print('Average precision: ', precision_avg)
-    print('Average recall: ', recall_avg)
-    print('Average F1 Score: ', F1score_avg)
-    print('All precision: ', precision_all)
-    print('All recall: ', recall_all)
-    print('All F1 Score: ', F1score_all)
+    precision = sum(true_pos_counts)/(sum(true_pos_counts)+sum(false_pos_counts))
+    recall = sum(true_pos_counts)/(sum(true_pos_counts)+sum(false_neg_counts))
+    F1score  = 2 * precision*recall/(precision+recall)
+    print('F1 Score: ', F1score_all)
