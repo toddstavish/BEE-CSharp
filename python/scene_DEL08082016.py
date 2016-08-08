@@ -30,7 +30,7 @@ def fixPolygonIntersect(polys):
     for poly in polys:
         polyNew = poly
         polyNew['poly'] = poly['poly'].buffer(0.0)
-        if polyNew['poly'].area != 0:
+        if polyNew['poly'].area != 0 or polyNew['BuildingId'] == 0:
             polysNew.append(polyNew)
 
 
