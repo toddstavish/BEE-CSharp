@@ -20,6 +20,7 @@ def polygonize(csv_path):
             if building_id != 0:
                 building_df = img_df.loc[img_df['BuildingId'] == building_id]
                 poly = zip(building_df['X'].astype(int), building_df['Y'].astype(int))
+
                 polys.append({'ImageId': image_id, 'BuildingId': building_id, 'poly': Polygon(poly)})
             else:
                 polys.append({'ImageId': image_id, 'BuildingId': building_id, 'poly': Polygon()})
@@ -29,7 +30,9 @@ def fixPolygonIntersect(polys):
     for poly in polys:
         polyNew = poly
         polyNew['poly'] = poly['poly'].buffer(0.0)
-        polysNew.append(polyNew)
+        if polyNew['poly'].area != 0:
+            polysNew.append(polyNew)
+
 
     return polysNew
 
@@ -37,7 +40,7 @@ def writeToCsvSubmission(polys, csvFileName):
     #ImageID, BuildingID, X, Y
     with open(csvFileName, 'wb') as csvFileName:
         fileWriter = csv.writer(csvFileName, delimiter=',')
-        fileWriter.writerow(['ImageID', 'BuildingID', 'X', 'Y'])
+        fileWriter.writerow(['ImageId', 'BuildingId', 'X', 'Y'])
         idx = 0
         for poly in polys:
             print(idx)
@@ -60,7 +63,7 @@ def writeToCsvSolution(polys, csvFileName):
     #ImageId, ContainsBuildings, BuildingId, X, Y
     with open(csvFileName, 'wb') as csvFileName:
         fileWriter = csv.writer(csvFileName, delimiter=',')
-        fileWriter.writerow(['ImageID', 'ContainsBuildings', 'BuildingID', 'X', 'Y'])
+        fileWriter.writerow(['ImageId', 'ContainsBuildings', 'BuildingId', 'X', 'Y'])
         idx = 0
         for poly in polys:
             print(idx)
@@ -131,12 +134,15 @@ if __name__ == "__main__":
     false_pos_counts = []
     false_neg_counts = []
 
-    test_fp = 'data/Submission_1.0.csv'
+    test_fp = 'data/SolutionSubmission_fixed_v1.csv'
+    truth_fp = 'data/Solution_fixed_v1.csv'
+    test_fp = 'data/Solution.csv'
     truth_fp = 'data/Solution.csv'
     test_fp = truth_fp
     start = time.time()
     prop_polys, sol_polys = load_sorted_polygons(test_fp, truth_fp)
-
+    stop = time.time()
+    print('Total TIme to ingest = {}'.format(stop-start))
     test_image_ids = get_image_ids(test_fp)
     bad_count = 0
 
