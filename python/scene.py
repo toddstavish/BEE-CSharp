@@ -58,13 +58,6 @@ def score(test_polys, truth_polys):
     false_neg_count = B - true_pos_count
     precision = true_pos_count/(true_pos_count+false_pos_count)
     recall = true_pos_count/(true_pos_count+false_neg_count)
-    print('Num truths: ', B)
-    print('Num proposals: ', M)
-    print('True pos count: ', true_pos_count)
-    print('False pos count: ', false_pos_count)
-    print('False neg count: ', false_neg_count)
-    print('Precision: ', precision)
-    print('Recall: ', recall)
     return true_pos_count, false_pos_count, false_neg_count
 
 
@@ -78,6 +71,7 @@ if __name__ == "__main__":
     prop_polys, sol_polys = load_sorted_polygons(test_fp, truth_fp)
 
     test_image_ids = get_image_ids(test_fp)
+    bad_count = 0
     for image_id in test_image_ids:
         test_polys = []
         truth_polys = []
@@ -86,12 +80,17 @@ if __name__ == "__main__":
             test_polys.append(poly['poly'])
         image_truth_polys = [item for item in sol_polys if item["ImageId"] == image_id]
         for poly in image_truth_polys:
-            truth_polys.append(poly['poly'])
+            p = poly['poly']
+            if False == p.is_valid:
+                bad_count += 1
+                p = p.buffer(0.0)
+            truth_polys.append(p)
         true_pos_count, false_pos_count, false_neg_count = score(test_polys, truth_polys)
         true_pos_counts.append(true_pos_count)
         false_pos_counts.append(false_pos_count)
         false_neg_counts.append(false_neg_count)
-    precision = sum(true_pos_counts)/(sum(true_pos_counts)+sum(false_pos_counts))
-    recall = sum(true_pos_counts)/(sum(true_pos_counts)+sum(false_neg_counts))
-    F1score  = 2 * precision*recall/(precision+recall)
-    print('F1 Score: ', F1score_all)
+        precision = float(sum(true_pos_counts))/float(sum(true_pos_counts)+sum(false_pos_counts))
+        recall = float(sum(true_pos_counts))/float(sum(true_pos_counts)+sum(false_neg_counts))
+        F1score  = 2.0*precision*recall/(precision+recall)
+        print('F1 Score: ', F1score)
+        print('bad count: ', bad_count)
