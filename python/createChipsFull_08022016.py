@@ -248,6 +248,8 @@ if __name__ == '__main__':
         cutChipFromMosaic(rasterFile, buildingsSrc, outlineSrc, outputDirectory=outdir, outputPrefix='clip2_',
                               clipSizeMX=200, clipSizeMY=200, numBands=3)
 
+
+
         rasterFile = os.path.join('/usr/local/share/spacenet/mosaic_8band', image)
         outdir = '/usr/local/share/spacenet/chips8band'
         cutChipFromMosaic(rasterFile, buildingsSrc, outlineSrc, outputDirectory=outdir, outputPrefix='clip2_',
