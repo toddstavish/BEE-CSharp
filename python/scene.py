@@ -37,7 +37,7 @@ def load_sorted_polygons(test_csv_path, truth_csv_path):
 def score(test_polys, truth_polys):
 
     # Define internal functions
-    IoU = lambda p1, p2: p1.intersection(p2).area/p1.union(p2).area
+    IoU = lambda p1, p2: (print(p2),p1.intersection(p2).area/p1.union(p2).area)
     argmax = lambda iterable, func: max(iterable, key=func)
 
     # Find detections using threshold/argmax/IoU for test polygons
@@ -46,7 +46,8 @@ def score(test_polys, truth_polys):
     B = len(truth_polys)
     M = len(test_polys)
     for test_poly in test_polys:
-        IoUs = map(lambda x:IoU(test_poly,x),truth_polys)
+        print('test poly: ', test_poly)
+        IoUs = map(lambda x:IoU(test_poly,x)[1],truth_polys)
         maxIoU = max(IoUs)
         threshold = 0.5
         if maxIoU >= threshold:
