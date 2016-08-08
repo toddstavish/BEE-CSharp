@@ -7,6 +7,7 @@ from geojson import load
 from shapely.geometry import Polygon
 import numpy as np
 import pandas as pd
+import time
 
 def polygonize(csv_path):
     polys = []
@@ -20,8 +21,6 @@ def polygonize(csv_path):
                 building_df = img_df.loc[img_df['BuildingId'] == building_id]
                 poly = zip(building_df['X'].astype(int), building_df['Y'].astype(int))
                 polys.append({'ImageId': image_id, 'BuildingId': building_id, 'poly': Polygon(poly)})
-            else:
-                polys.append({'ImageId': image_id, 'BuildingId': building_id, 'poly': Polygon()})
     return polys
 
 def get_image_ids(csv_path):
@@ -37,7 +36,7 @@ def load_sorted_polygons(test_csv_path, truth_csv_path):
 def score(test_polys, truth_polys):
 
     # Define internal functions
-    IoU = lambda p1, p2: (print(p2),p1.intersection(p2).area/p1.union(p2).area)
+    IoU = lambda p1, p2: (p1.intersection(p2).area/p1.union(p2).area)
     argmax = lambda iterable, func: max(iterable, key=func)
 
     # Find detections using threshold/argmax/IoU for test polygons
@@ -46,8 +45,7 @@ def score(test_polys, truth_polys):
     B = len(truth_polys)
     M = len(test_polys)
     for test_poly in test_polys:
-        print('test poly: ', test_poly)
-        IoUs = map(lambda x:IoU(test_poly,x)[1],truth_polys)
+        IoUs = map(lambda x:IoU(test_poly,x),truth_polys)
         maxIoU = max(IoUs)
         threshold = 0.5
         if maxIoU >= threshold:
@@ -66,31 +64,42 @@ if __name__ == "__main__":
     false_pos_counts = []
     false_neg_counts = []
 
-    test_fp = 'Submission_1.0.csv'
-    truth_fp = 'Solution.csv'
+    test_fp = 'Solution_Submission_v4_915.csv'
+    truth_fp = 'Solution_v4_915.csv'
+    t0 = time.time()
     prop_polys, sol_polys = load_sorted_polygons(test_fp, truth_fp)
+    t1 = time.time()
+    total = t1-t0
+    print('time of ingest: ', total)
 
+    t0 = time.time()
     test_image_ids = get_image_ids(test_fp)
     bad_count = 0
     for image_id in test_image_ids:
+        print('Imaged ID: ', image_id)
         test_polys = []
         truth_polys = []
         image_test_polys = [item for item in prop_polys if item["ImageId"] == image_id]
         for poly in image_test_polys:
             test_polys.append(poly['poly'])
         image_truth_polys = [item for item in sol_polys if item["ImageId"] == image_id]
-        for poly in image_truth_polys:
-            p = poly['poly']
-            if False == p.is_valid:
-                bad_count += 1
-                p = p.buffer(0.0)
-            truth_polys.append(p)
-        true_pos_count, false_pos_count, false_neg_count = score(test_polys, truth_polys)
+        if image_truth_polys == []:
+            true_pos_count = 0
+            false_pos_count = len(image_test_polys)
+            false_neg_count = 0
+        else:
+            for poly in image_truth_polys:
+                truth_polys.append(poly['poly'])
+            true_pos_count, false_pos_count, false_neg_count = score(test_polys, truth_polys)
         true_pos_counts.append(true_pos_count)
         false_pos_counts.append(false_pos_count)
         false_neg_counts.append(false_neg_count)
-        precision = float(sum(true_pos_counts))/float(sum(true_pos_counts)+sum(false_pos_counts))
-        recall = float(sum(true_pos_counts))/float(sum(true_pos_counts)+sum(false_neg_counts))
-        F1score  = 2.0*precision*recall/(precision+recall)
-        print('F1 Score: ', F1score)
-        print('bad count: ', bad_count)
+        if (sum(true_pos_counts) > 0 ) and ((sum( false_neg_counts ) > 0 ) and (sum(false_pos_counts) > 0)):
+            precision = float(sum(true_pos_counts))/float(sum(true_pos_counts)+sum(false_pos_counts))
+            recall = float(sum(true_pos_counts))/float(sum(true_pos_counts)+sum(false_neg_counts))
+            F1score  = 2.0*precision*recall/(precision+recall)
+            print('F1 Score: ', F1score)
+            print('bad count: ', bad_count)
+    t1 = time.time()
+    total = t1-t0
+    print('time of evaluation: ', total)
