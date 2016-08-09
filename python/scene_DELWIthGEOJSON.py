@@ -314,7 +314,7 @@ if __name__ == "__main__":
     total = t1-t0
     print('time of ingest: ', total)
 
-    t0 = time.time()
+    #t0 = time.time()
     test_image_ids = set([item['ImageId'] for item in prop_polys if item['ImageId']>0])
     prop_polysIdList = np.asarray([item['ImageId'] for item in prop_polys if item["ImageId"] >0])
     prop_polysPoly   = np.asarray([item['poly'] for item in prop_polys if item["ImageId"] >0])
@@ -344,7 +344,7 @@ if __name__ == "__main__":
     print('False_Neg_Total', False_Neg_Total)
     precision = float(True_Pos_Total) / (float(True_Pos_Total) + (False_Pos_Total))
     recall = float(True_Pos_Total) / (float(True_Pos_Total)+ (False_Neg_Total))
-
+    F1ScoreTotal = 2.0*precision*recall/(precision+recall)
     print('F1Total', ResultSum[3])
 
 
@@ -375,11 +375,12 @@ if __name__ == "__main__":
         #     F1ScoreList.append(F1score)
         #     #print('F1 Score: ', F1score)
         #     #print('bad count: ', bad_count)
-    t1 = time.time()
-    total = t1-t0
-    print('time of evaluation: ', total)
-    print(F1ScoreList)
-    print(np.mean(F1ScoreList))
+    t2 = time.time()
+    total = t2-t0
+    print('time of evaluation: {}'.format(t2-t1))
+    print('time of evaluation {}s/imageId'.format((t2-t1)/len(ResultList)))
+    print(ResultList)
+    print(np.mean(ResultList))
 
 
 #    t5 =time.time()
