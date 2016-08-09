@@ -8,7 +8,7 @@ A C# console application that performs polygon comparison for building extractio
 3. Install NetTopologySuite - PM> Install-Package NetTopologySuite
 4. Install GeoJSON IO Library - PM> Install-Package NetTopologySuite.IO.GeoJSON
 5. Install GDAL - PM> Install-Package GDAL
-6. Install Clipper - PM> Install-Package Clipper
+6. Install Deedle - PM> Install-Package Deedle
 
 ## Python development steps
 1. Install python packages dependencies (requirements.txt)
