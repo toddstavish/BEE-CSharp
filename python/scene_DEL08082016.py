@@ -127,20 +127,45 @@ def score(test_polys, truth_polys):
     precision = true_pos_count/(true_pos_count+false_pos_count)
     recall = true_pos_count/(true_pos_count+false_neg_count)
     return true_pos_count, false_pos_count, false_neg_count
+from osgeo import ogr
+def importFromGeoJson(geoJsonName):
 
+    #driver = ogr.GetDriverByName('geojson')
+    dataSource = ogr.Open(geoJsonName, 0)
+
+    layer = dataSource.GetLayer()
+    print(layer.GetFeatureCount())
+
+    polys =  []
+    image_id = 1
+    building_id = 0
+    for feature in layer:
+        building_id = building_id + 1
+        polys.append({'ImageId': image_id, 'BuildingId': building_id, 'poly': feature.GetGeometryRef()})
+
+    return polys
 
 if __name__ == "__main__":
+    print('{}'.format(os.getcwd()))
     true_pos_counts = []
     false_pos_counts = []
     false_neg_counts = []
 
-    test_fp = 'data/SolutionSubmission_fixed_v1.csv'
+    test_fp = '../data/SolutionSubmission_fixed_v1.csv'
     truth_fp = 'data/Solution_fixed_v1.csv'
-    test_fp = 'data/Solution.csv'
-    truth_fp = 'data/Solution.csv'
+    test_fp = '../data/Solution_Submission_v4.csv'
+    truth_fp = '../data/Solution_v4.csv'
+
+    truth_fp = '/Users/dlindenbaum/Documents/CosmiQCode_09282015/BEE-CSharp/data/Rio_Buildings_Combined_Geo.geojson'
     test_fp = truth_fp
     start = time.time()
-    prop_polys, sol_polys = load_sorted_polygons(test_fp, truth_fp)
+    #prop_polys, sol_polys = load_sorted_polygons(test_fp, truth_fp)
+
+    sol_polys = importFromGeoJson(truth_fp)
+    print('halfway')
+    prop_poly = importFromGeoJson(test_fp)
+
+
     stop = time.time()
     print('Total TIme to ingest = {}'.format(stop-start))
     test_image_ids = get_image_ids(test_fp)
