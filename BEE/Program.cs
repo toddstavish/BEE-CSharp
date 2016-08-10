@@ -180,7 +180,8 @@ namespace BEE
             else
             {
                 precisionAll = Convert.ToDouble(truePosCounts.Sum()) / Convert.ToDouble(truePosCounts.Sum() + falsePosCounts.Sum());
-                recallAll = Convert.ToDouble(truePosCounts.Sum()) / Convert.ToDouble(truthPolys.Count());
+                //recallAll = Convert.ToDouble(truePosCounts.Sum()) / Convert.ToDouble(truthPolys.Count());
+                recallAll = Convert.ToDouble(truePosCounts.Sum()) / Convert.ToDouble(truePosCounts.Sum() + falseNegCounts.Sum());
                 F1score = 2.0 * precisionAll * recallAll / (precisionAll + recallAll);
             }
             System.Diagnostics.Debug.WriteLine("Overall Precision: " + precisionAll);
