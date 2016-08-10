@@ -15,6 +15,7 @@ from multiprocessing import Pool, Process
 import multiprocessing
 import csv
 import itertools
+import sys
 def polygonize(csv_path):
     polys = []
     polys_df = pd.read_csv(csv_path)
@@ -293,29 +294,37 @@ def evalFunction((image_id, prop_polys, sol_polys)):
 
 
 if __name__ == "__main__":
+
+    if len(sys.argv)>1:
+        truth_fp = sys.argv[1]
+        test_fp = sys.argv[2]
+    else:
+        test_fp = '../solution_v4Buffer.geojson'
+        truth_fp = '../solution_v4Buffer.geojson'
+    if len(sys.argv)>3:
+        maxCPU = int(sys.argv[3])
+    else:
+        maxCPU = multiprocessing.cpu_count()
+
     true_pos_counts = []
     false_pos_counts = []
     false_neg_counts = []
 
 
-    #test_fp = '../solution2xSubmission.geojson'
-    test_fp  = '../solution_v4Buffer.geojson'
-    truth_fp = '../solution_v4Buffer.geojson'
 
 
-    pickleLocation = 'solution_v4.p'
     t0 = time.time()
-    #sol_polys = pickle.load(open(pickleLocation, "rb"))
+    # Start Ingest Of Truth and Test Case
     sol_polys = importFromGeoJson(truth_fp)
+    prop_polys = importFromGeoJson(test_fp)
 
-    #prop_polys = importFromGeoJson(test_fp)
-    prop_polys = sol_polys
-    #prop_polys, sol_polys = load_sorted_polygons(test_fp, truth_fp)
+
     t1 = time.time()
     total = t1-t0
     print('time of ingest: ', total)
 
-    #t0 = time.time()
+    # Speed up search by preprocessing ImageId and polygonIds
+
     test_image_ids = set([item['ImageId'] for item in prop_polys if item['ImageId']>0])
     prop_polysIdList = np.asarray([item['ImageId'] for item in prop_polys if item["ImageId"] >0])
     prop_polysPoly   = np.asarray([item['poly'] for item in prop_polys if item["ImageId"] >0])
@@ -324,17 +333,12 @@ if __name__ == "__main__":
 
     bad_count = 0
     F1ScoreList=[]
-    print('{}'.format(multiprocessing.cpu_count()))
-    p = Pool(processes=multiprocessing.cpu_count())
+    cpuCount = min(multiprocessing.cpu_count(), maxCPU)
+    print('{}'.format(cpuCount))
+    p = Pool(processes=cpuCount)
     ResultList=[]
-    # timeList = []
-    # for image_id in test_image_ids:
-    #     t1 = time.time()
-    #     ResultList.append(evalFunction2(((image_id),  (prop_polysIdList, prop_polysPoly), (sol_polysIdsList, sol_polysPoly))))
-    #     t2 = time.time()
-    #     timeList.append(t2-t1)
-    #     print("{}s per imageID".format(t2-t1))
-    #     print("{}sAvg out of {}".format(np.mean(timeList), len(timeList)))
+
+    # Calculate Values
     ResultList = p.map(evalFunction2, zip(test_image_ids, itertools.repeat((prop_polysIdList, prop_polysPoly), times=len(test_image_ids)),
                                          itertools.repeat((sol_polysIdsList, sol_polysPoly), times=len(test_image_ids))))
     ResultSum = np.sum(ResultList, axis=0)
@@ -347,36 +351,9 @@ if __name__ == "__main__":
     precision = float(True_Pos_Total) / (float(True_Pos_Total) + (False_Pos_Total))
     recall = float(True_Pos_Total) / (float(True_Pos_Total)+ (False_Neg_Total))
     F1ScoreTotal = 2.0*precision*recall/(precision+recall)
-    print('F1Total', ResultSum[3])
+    print('F1Total', F1ScoreTotal)
 
 
-
-        #p.map(evalFunction, )
-        # print('Imaged ID: ', image_id)
-        # test_polys = []
-        # truth_polys = []
-        # image_test_polys = [item for item in prop_polys if item["ImageId"] == image_id]
-        # for poly in image_test_polys:
-        #     test_polys.append(poly['poly'])
-        # image_truth_polys = [item for item in sol_polys if item["ImageId"] == image_id]
-        # if image_truth_polys == []:
-        #     true_pos_count = 0
-        #     false_pos_count = len(image_test_polys)
-        #     false_neg_count = 0
-        # else:
-        #     for poly in image_truth_polys:
-        #         truth_polys.append(poly['poly'])
-        #     true_pos_count, false_pos_count, false_neg_count = score(test_polys, truth_polys)
-        # true_pos_counts.append(true_pos_count)
-        # false_pos_counts.append(false_pos_count)
-        # false_neg_counts.append(false_neg_count)
-        # if (sum(true_pos_counts) > 0 ) and ((sum( false_neg_counts ) > 0 ) and (sum(false_pos_counts) > 0)):
-        #     precision = float(sum(true_pos_counts))/float(sum(true_pos_counts)+sum(false_pos_counts))
-        #     recall = float(sum(true_pos_counts))/float(sum(true_pos_counts)+sum(false_neg_counts))
-        #     F1score  = 2.0*precision*recall/(precision+recall)
-        #     F1ScoreList.append(F1score)
-        #     #print('F1 Score: ', F1score)
-        #     #print('bad count: ', bad_count)
     t2 = time.time()
     total = t2-t0
     print('time of evaluation: {}'.format(t2-t1))
@@ -387,20 +364,3 @@ if __name__ == "__main__":
 
 
 
-#    t5 =time.time()
-
-    #readWKTCSV('/Users/dlindenbaum/Documents/CosmiQCode_09282015/BEE-CSharp/wktSubmission.csv')
-
-
-    #t6 = time.time()
-    #print(t6-t5)
-
-
-    #t5 = time.time()
-#    newTest = []
-#    for example in test:
-#        example['poly'] = wkt.loads(example['PolygonWKT'])
-
-
-
-#    t6 = time.time()
