@@ -158,9 +158,11 @@ namespace BEE
 
             foreach (var imageID in imageIDs)
             {
-                IEnumerable<Tuple<int, int, Polygon>> testImages = testPolys.Where(t => t.Item1 == imageID); // This could be done in the dataframe slicing
-                IEnumerable<Tuple<int, int, Polygon>> truthImages = truthPolys.Where(t => t.Item1 == imageID); // This could be done in the dataframe slicing
-                score(testPolys.Select(t => t.Item3).ToList(), truthPolys.Select(t => t.Item3).ToList(), out precision, out recall, out truePosCount, out falsePosCount, out falseNegCount);
+                System.Diagnostics.Debug.WriteLine("image id: " + imageID);
+                IEnumerable<Tuple<int, int, Polygon>> testImages = testPolys.Where(t => t.Item1 == imageID); // This could be done in the dataframe slicing and a better data structure
+                System.Diagnostics.Debug.WriteLine("count: " + testImages.Count());
+                IEnumerable<Tuple<int, int, Polygon>> truthImages = truthPolys.Where(t => t.Item1 == imageID); // This could be done in the dataframe slicing and a better data structure
+                score(testImages.Select(t => t.Item3).ToList(), truthImages.Select(t => t.Item3).ToList(), out precision, out recall, out truePosCount, out falsePosCount, out falseNegCount);
                 System.Diagnostics.Debug.WriteLine("Precision: " + precision);
                 System.Diagnostics.Debug.WriteLine("Recall:  " + recall);
                 truePosCounts.Add(truePosCount);
