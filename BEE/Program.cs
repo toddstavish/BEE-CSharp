@@ -3,7 +3,10 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 using GeoAPI.Geometries;
+using NetTopologySuite.IO;
 using NetTopologySuite.Geometries;
+using NetTopologySuite.Features;
+using Deedle;
 using OSGeo.GDAL;
 using OSGeo.OGR;
 using OSGeo.OSR;
@@ -29,9 +32,9 @@ namespace BEE
             return p;
         }
 
-        public static void loadSortedPolygons(string testJsonFp, string truthJsonFp, out List<Polygon> testPolys, out List<Polygon> truthPolys)
+        public static void loadGeoJson(string testJsonFp, string truthJsonFp, out List<Polygon> testPolys, out List<Polygon> truthPolys)
         {
-            // Convert geojson files to polygons lista
+            // Convert geojson files to polygon lists
             System.IO.StreamReader file = new System.IO.StreamReader(testJsonFp);
             var reader = new NetTopologySuite.IO.GeoJsonReader();
             string geoJsonText = file.ReadToEnd();
@@ -62,6 +65,36 @@ namespace BEE
             }
             IEnumerable<Tuple<float, Polygon>> pairs = randos.Zip(testPolys, (a, b) => Tuple.Create(a, b)).OrderByDescending(a => a);
             testPolys = pairs.Select(b => b.Item2).ToList();
+        }
+
+        public static HashSet<int> getImageIDs(string csvFp)
+        {
+            var imageDF = Frame.ReadCsv(csvFp);
+            var imageIDs = new HashSet<int>();
+            foreach (var row in imageDF.Rows.ObservationsAll)
+            {
+                imageIDs.Add((int)row.Value.Value["ImageId"]);
+            }
+            return imageIDs;
+        }
+
+        public static List<Tuple<int, int, Polygon>> loadWktCsv(string csvFp)
+        {
+            var imageDF = Frame.ReadCsv(csvFp);
+
+            var imageList = new List<Tuple<int, int, Polygon>>();
+
+            // Change this to slicing and a better data structure
+            foreach (var row in imageDF.Rows.ObservationsAll)
+            {
+                System.Diagnostics.Debug.WriteLine(row.ToString());
+                int imageID = (int)row.Value.Value["ImageId"];
+                int buildingID = (int)row.Value.Value["BuildingId"];
+                WKTReader rdr = new WKTReader();
+                Polygon poly = (Polygon)rdr.Read((string)row.Value.Value["PolygonWKT"]);
+                imageList.Add(Tuple.Create(imageID, buildingID, poly));
+            }
+            return imageList;
         }
 
         public static void score(List<Polygon> testPolys, List<Polygon> truthPolys, out double precision, out double recall, out int truePosCount, out int falsePosCount, out int falseNegCount)
@@ -109,51 +142,25 @@ namespace BEE
             int truePosCount = 0;
             int falsePosCount = 0;
             int falseNegCount = 0;
-            List<Polygon> testPolys;
-            List<Polygon> truthPolys;
             List<int> truePosCounts = new List<int>();
             List<int> falsePosCounts = new List<int>();
             List<int> falseNegCounts = new List<int>();
-            string baseDir = "C:\\Users\\todd\\Documents\\Visual Studio 2015\\Projects\\BEE\\Data\\";
-            foreach (var imageID in Enumerable.Range(1, 5))
-            {
-                truthFP = baseDir + "Rio\\rio_test_aoi" + imageID.ToString() + ".geojson";
-                testFP = baseDir + "Rio_Submission_Testing\\Rio_sample_challenge_submission" + imageID.ToString() + ".geojson";
-                System.Diagnostics.Debug.WriteLine("truthFP: " + truthFP);
-                System.Diagnostics.Debug.WriteLine("testFP: " + testFP);
-                loadSortedPolygons(testFP, truthFP, out testPolys, out truthPolys);
-                score(testPolys, truthPolys, out precision, out recall, out truePosCount, out falsePosCount, out falseNegCount);
-                System.Diagnostics.Debug.WriteLine("Precision: " + precision);
-                System.Diagnostics.Debug.WriteLine("Recall:  " + recall);
-                truePosCounts.Add(truePosCount);
-                falsePosCounts.Add(falsePosCount);
-                falseNegCounts.Add(falseNegCount);
-            }
 
+            string baseDir = "C:\\Users\\todd\\Documents\\Visual Studio 2015\\Projects\\BEE\\data\\";
 
-            truthFP = baseDir + "Rio\\rio_test_aoi1.geojson";
-            testFP = baseDir + "Rio_Hand_Truth_AOI1\\";
-            foreach (var testFile in Directory.GetFiles(testFP, "*.geojson"))
-            {
-                System.Diagnostics.Debug.WriteLine("truthFP: " + truthFP);
-                System.Diagnostics.Debug.WriteLine("testFP: " + testFile);
-                loadSortedPolygons(testFile, truthFP, out testPolys, out truthPolys);
-                score(testPolys, truthPolys, out precision, out recall, out truePosCount, out falsePosCount, out falseNegCount);
-                System.Diagnostics.Debug.WriteLine("Precision: " + precision);
-                System.Diagnostics.Debug.WriteLine("Recall:  " + recall);
-                truePosCounts.Add(truePosCount);
-                falsePosCounts.Add(falsePosCount);
-                falseNegCounts.Add(falseNegCount);
-            }
+            truthFP = baseDir + "wktSubmission-small.csv";
+            testFP = baseDir + "wktSubmission-small.csv";
+            System.Diagnostics.Debug.WriteLine("truthFP: " + truthFP);
+            System.Diagnostics.Debug.WriteLine("testFP: " + testFP);
+            var truthPolys = loadWktCsv(truthFP);
+            var testPolys = loadWktCsv(testFP);
+            var imageIDs = getImageIDs(testFP);
 
-            truthFP = baseDir + "Rio\\rio_test_aoi2.geojson";
-            testFP = baseDir + "Rio_Submission_Testing_CQWUnit\\";
-            foreach (var testFile in Directory.GetFiles(testFP, "*.geojson"))
+            foreach (var imageID in imageIDs)
             {
-                System.Diagnostics.Debug.WriteLine("truthFP: " + truthFP);
-                System.Diagnostics.Debug.WriteLine("testFP: " + testFile);
-                loadSortedPolygons(testFile, truthFP, out testPolys, out truthPolys);
-                score(testPolys, truthPolys, out precision, out recall, out truePosCount, out falsePosCount, out falseNegCount);
+                IEnumerable<Tuple<int, int, Polygon>> testImages = testPolys.Where(t => t.Item1 == imageID); // This could be done in the dataframe slicing
+                IEnumerable<Tuple<int, int, Polygon>> truthImages = truthPolys.Where(t => t.Item1 == imageID); // This could be done in the dataframe slicing
+                score(testPolys.Select(t => t.Item3).ToList(), truthPolys.Select(t => t.Item3).ToList(), out precision, out recall, out truePosCount, out falsePosCount, out falseNegCount);
                 System.Diagnostics.Debug.WriteLine("Precision: " + precision);
                 System.Diagnostics.Debug.WriteLine("Recall:  " + recall);
                 truePosCounts.Add(truePosCount);
