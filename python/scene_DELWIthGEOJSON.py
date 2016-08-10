@@ -12,6 +12,7 @@ import cPickle as pickle
 import math
 import numpy as np
 from multiprocessing import Pool, Process
+import multiprocessing
 import csv
 import itertools
 def polygonize(csv_path):
@@ -323,7 +324,8 @@ if __name__ == "__main__":
 
     bad_count = 0
     F1ScoreList=[]
-    p = Pool(processes=8)
+    print('{}'.format(multiprocessing.cpu_count()))
+    p = Pool(processes=multiprocessing.cpu_count())
     ResultList=[]
     # timeList = []
     # for image_id in test_image_ids:
@@ -379,8 +381,10 @@ if __name__ == "__main__":
     total = t2-t0
     print('time of evaluation: {}'.format(t2-t1))
     print('time of evaluation {}s/imageId'.format((t2-t1)/len(ResultList)))
+    print('Total Time {}s'.format(total))
     print(ResultList)
     print(np.mean(ResultList))
+
 
 
 #    t5 =time.time()
