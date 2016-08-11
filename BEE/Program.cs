@@ -1,17 +1,9 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 using System.Collections.Generic;
-using GeoAPI.Geometries;
 using NetTopologySuite.IO;
 using NetTopologySuite.Geometries;
-using NetTopologySuite.Features;
 using Deedle;
-using OSGeo.GDAL;
-using OSGeo.OGR;
-using OSGeo.OSR;
-using ClipperLib;
-using Kaggle.Metrics.Utilities;
 
 namespace BEE
 {
@@ -97,10 +89,9 @@ namespace BEE
             return imageList;
         }
 
-        public static void score(List<Polygon> testPolys, List<Polygon> truthPolys, out double precision, out double recall, out int truePosCount, out int falsePosCount, out int falseNegCount)
+        public static void score(List<Polygon> testPolys, List<Polygon> truthPolys, out int truePosCount, out int falsePosCount, out int falseNegCount)
         {
-            recall = 0.0;
-            precision = 0.0;
+
             truePosCount = 0;
             falsePosCount = 0;
             falseNegCount = 0;
@@ -128,17 +119,13 @@ namespace BEE
             System.Diagnostics.Debug.WriteLine("Num proposals: " + M);
             System.Diagnostics.Debug.WriteLine("True pos count: " + truePosCount);
             System.Diagnostics.Debug.WriteLine("False pos count: " + falsePosCount);
-            System.Diagnostics.Debug.WriteLine("False neg count:  "+ falseNegCount);
-            precision = Convert.ToDouble(truePosCount) / Convert.ToDouble(truePosCount + falsePosCount);
-            recall = Convert.ToDouble(truePosCount) / Convert.ToDouble(truePosCount + falseNegCount);
+            System.Diagnostics.Debug.WriteLine("False neg count:  "+ falseNegCount);;
         }
 
         static void Main(string[] args)
         {
             string testFP;
             string truthFP;
-            double recall = 0;
-            double precision = 0;
             int truePosCount = 0;
             int falsePosCount = 0;
             int falseNegCount = 0;
@@ -154,24 +141,49 @@ namespace BEE
             System.Diagnostics.Debug.WriteLine("testFP: " + testFP);
             var truthPolys = loadWktCsv(truthFP);
             var testPolys = loadWktCsv(testFP);
-            var imageIDs = getImageIDs(testFP);
+            var imageIDs = getImageIDs(truthFP);
 
             foreach (var imageID in imageIDs)
             {
                 System.Diagnostics.Debug.WriteLine("image id: " + imageID);
                 IEnumerable<Tuple<int, int, Polygon>> testImages = testPolys.Where(t => t.Item1 == imageID); // This could be done in the dataframe slicing and a better data structure
-                System.Diagnostics.Debug.WriteLine("count: " + testImages.Count());
                 IEnumerable<Tuple<int, int, Polygon>> truthImages = truthPolys.Where(t => t.Item1 == imageID); // This could be done in the dataframe slicing and a better data structure
-                score(testImages.Select(t => t.Item3).ToList(), truthImages.Select(t => t.Item3).ToList(), out precision, out recall, out truePosCount, out falsePosCount, out falseNegCount);
-                System.Diagnostics.Debug.WriteLine("Precision: " + precision);
-                System.Diagnostics.Debug.WriteLine("Recall:  " + recall);
+                if (testImages.ToList()[0].Item2 == -1)
+                {
+                    falsePosCount = 0;
+                    truePosCount = 0;
+                }
+                else
+                {
+                    if (truthImages.ToList()[0].Item2 == -1)
+                    {
+                        truePosCount = 0;
+                        falsePosCount = testImages.Count();
+                    }
+                    score(testImages.Select(t => t.Item3).ToList(), truthImages.Select(t => t.Item3).ToList(), out truePosCount, out falsePosCount, out falseNegCount);
+                }
+                System.Diagnostics.Debug.WriteLine("Building id: " + truthImages.ToList()[0].Item2);
+                System.Diagnostics.Debug.WriteLine("truth count: " + truthImages.Count());
                 truePosCounts.Add(truePosCount);
                 falsePosCounts.Add(falsePosCount);
                 falseNegCounts.Add(falseNegCount);
             }
-            double precisionAll = Convert.ToDouble(truePosCounts.Sum()) / Convert.ToDouble(truePosCounts.Sum() + falsePosCounts.Sum());
-            double recallAll = Convert.ToDouble(truePosCounts.Sum()) / Convert.ToDouble(truePosCounts.Sum() + falseNegCounts.Sum());
-            double F1score = 2.0 * precisionAll * recallAll / (precisionAll + recallAll);
+            double precisionAll;
+            double recallAll;
+            double F1score;
+            if (falsePosCounts.Sum() == 0 && truePosCounts.Sum() == 0)
+            {
+                precisionAll = 1.0;
+                recallAll = 0.0;
+                F1score = 0.0;
+            }
+            else
+            {
+                precisionAll = Convert.ToDouble(truePosCounts.Sum()) / Convert.ToDouble(truePosCounts.Sum() + falsePosCounts.Sum());
+                //recallAll = Convert.ToDouble(truePosCounts.Sum()) / Convert.ToDouble(truthPolys.Count());
+                recallAll = Convert.ToDouble(truePosCounts.Sum()) / Convert.ToDouble(truePosCounts.Sum() + falseNegCounts.Sum());
+                F1score = 2.0 * precisionAll * recallAll / (precisionAll + recallAll);
+            }
             System.Diagnostics.Debug.WriteLine("Overall Precision: " + precisionAll);
             System.Diagnostics.Debug.WriteLine("Overall Recall:  " + recallAll);
             System.Diagnostics.Debug.WriteLine("Overall F1:  " + F1score);
