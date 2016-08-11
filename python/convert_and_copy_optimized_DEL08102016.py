@@ -205,7 +205,7 @@ if __name__ == "__main__":
     with open(aoiFile, 'rb') as csvfile:
         fileReader = csv.reader(csvfile, delimiter=' ', quotechar='|')
         for row in fileReader:
-            imageFileList.append(row)
+            imageFileList.append(row[0])
 
 
     with open(csvFileTotalName_3Band, 'wb') as csvfileTotal, \
@@ -247,8 +247,8 @@ if __name__ == "__main__":
 
 
             truthJsonFp = ''.join(['../data/chipsBuildings/',imageFileList[image_id-1].replace('.tif', '.geojson')])
-            inputRaster = ''.join(['../image_chips/3band/',imageFileList[image_id-1]])
-            eightbandRaster = ''.join(['image_chips/8band/',imageFileList[image_id-1]])
+            inputRaster = ''.join(['../data/image_chips/3band/',imageFileList[image_id-1]])
+            eightbandRaster = ''.join(['../data/image_chips/8band/',imageFileList[image_id-1]])
 
             print('reading truthJsonFp=%s' % truthJsonFp)
             # load GeoJSON file
