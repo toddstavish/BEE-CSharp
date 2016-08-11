@@ -189,17 +189,18 @@ def geoPolygonToPixelPolygonWKT(geom, inputRaster, targetSR, geomTransform):
 
 if __name__ == "__main__":
 
-    csvFileTotalName_3Band = 'all_polygons_solution_8Band.csv'
-    csvFileTrainName_3Band = 'train_polygons_solution_8Band.csv'
-    csvFilePublicName_3Band = 'public_polygons_solution_8Band.csv'
-    csvFilePrivateName_3Band = 'private_polygons_solution_8Band.csv'
+    csvFileTotalName_3Band = '../data/all_polygons_solution_3Band.csv'
+
+    csvFileTrainName_3Band = '../data/train_polygons_solution_3Band.csv'
+    csvFilePublicName_3Band = '../data/public_polygons_solution_3Band.csv'
+    csvFilePrivateName_3Band = '../data/private_polygons_solution_3Band.csv'
 
     csvFileTotalName_8Band = '../data/all_polygons_solution_8Band.csv'
-    csvFileTrainName_8Band = 'train_polygons_solution_8Band.csv'
-    csvFilePublicName_8Band = 'public_polygons_solution_8Band.csv'
-    csvFilePrivateName_8Band = 'private_polygons_solution_8Band.csv'
+    csvFileTrainName_8Band = '../data/train_polygons_solution_8Band.csv'
+    csvFilePublicName_8Band = '../data/public_polygons_solution_8Band.csv'
+    csvFilePrivateName_8Band = '../data/private_polygons_solution_8Band.csv'
 
-    csvFileImageKeyIndexName = 'imageKeyIndex.csv'
+    csvFileImageKeyIndexName = '../data/imageKeyIndex.csv'
     aoiFile = '../data/chipNames_inAOI.txt'
     imageFileList = []
     with open(aoiFile, 'rb') as csvfile:
