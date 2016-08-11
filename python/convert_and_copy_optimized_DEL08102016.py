@@ -278,16 +278,17 @@ if __name__ == "__main__":
             pubimageId = pubimageId+1
             imageFileBase = "{}_Public_img{}".format(imageFileSplt[1], pubimageId)
 
-        imageFileListTranslate[imageFile,
-                               usage,
-                               imageFileBase,
-                               "3band_{}.tif".format(imageFileBase),
-                               "3band_{}_Pix.geojson".format(imageFileBase),
-                               "{}_Geo.geojson".format(imageFileBase),
-                               "8band_{}.tif".format(imageFileBase),
-                               "8band_{}_Pix.geojson".format(imageFileBase),
-                               "{}_Geo.geojson".format(imageFileBase)
-                                ]
+        imageFileListTranslate.append([
+                                imageFile,
+                                usage,
+                                imageFileBase,
+                                "3band_{}.tif".format(imageFileBase),
+                                "3band_{}_Pix.geojson".format(imageFileBase),
+                                "{}_Geo.geojson".format(imageFileBase),
+                                "8band_{}.tif".format(imageFileBase),
+                                "8band_{}_Pix.geojson".format(imageFileBase),
+                                "{}_Geo.geojson".format(imageFileBase)
+                                ])
 
     with open(csvFileImageKeyIndexName, 'wb') as csvfileImageKey:
         writerImageKey = csv.writer(csvfileImageKey, delimiter=',', lineterminator='\n')
