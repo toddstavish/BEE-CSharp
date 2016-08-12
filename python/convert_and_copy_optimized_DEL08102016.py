@@ -269,8 +269,9 @@ if __name__ == "__main__":
     imageFileListTranslate = []
     for imageFile in imageFileList:
         imageFileSplt = imageFile.split('_')
-        if imageFileSplt[0] in privateList:
+        if "{}.tif".format(imageFileSplt[1]) in privateList:
             usage='Private'
+            print(usage)
             privimageId = privimageId + 1
             imageFileBase = "{}_Private_img{}".format(imageFileSplt[1], privimageId)
         else:
