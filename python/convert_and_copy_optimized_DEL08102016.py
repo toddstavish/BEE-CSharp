@@ -267,7 +267,11 @@ if __name__ == "__main__":
     privimageId = 0
     pubimageId = 0
     imageFileListTranslate = []
+    imageFileIdx = 0
     for imageFile in imageFileList:
+        imageFileIdx = imageFileIdx+1
+        print(imageFileIdx)
+
         imageFileSplt = imageFile.split('_')
         if "{}.tif".format(imageFileSplt[1]) in privateList:
             usage='Private'
@@ -393,9 +397,9 @@ if __name__ == "__main__":
                         outputList = [imageFileTranslate[2], building_id, polygonWKT[0], polygonWKT[1], usage]
                         writerTotal_8Band.writerow(outputList)
                         if usage == 'Private':
-                            writerPrivate_3band.writerow(outputList[:-1])
+                            writerPrivate_8band.writerow(outputList[:-1])
                         else:
-                            writerPublic_3band.writerow(outputList[:-1])
+                            writerPublic_8band.writerow(outputList[:-1])
 
 
 
