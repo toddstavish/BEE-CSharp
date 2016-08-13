@@ -145,8 +145,8 @@ def geoPolygonToPixelPolygonWKT(geom, inputRaster, targetSR, geomTransform):
                     ringPix.AddPoint(xPix, yPix)
 
             polygonPix.AddGeometry(ringPix)
-            polygonPixBuffer  = polygonPix.Buffer(0.0)
-            polygonPixBufferList.append([polygonPixBuffer, geom])
+        polygonPixBuffer  = polygonPix.Buffer(0.0)
+        polygonPixBufferList.append([polygonPixBuffer, geom])
 
     elif geom.GetGeometryName() == 'MULTIPOLYGON':
 
@@ -164,7 +164,7 @@ def geoPolygonToPixelPolygonWKT(geom, inputRaster, targetSR, geomTransform):
 
                 polygonPix.AddGeometry(ringPix)
                 polygonPixBuffer = polygonPix.Buffer(0.0)
-                polygonPixBufferList.append([polygonPixBuffer, geom])
+            polygonPixBufferList.append([polygonPixBuffer, geom])
 
 
     for polygonTest in polygonPixBufferList:
