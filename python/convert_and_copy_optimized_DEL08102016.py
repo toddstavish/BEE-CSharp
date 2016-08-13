@@ -362,7 +362,8 @@ if __name__ == "__main__":
             dataSource = ogr.Open(truthJsonFp, 0)
             layer = dataSource.GetLayer()
             print(layer.GetFeatureCount())
-            building_id = 0
+            building_id_3band = 0
+            building_id_8band = 0
             # check if geoJsonisEmpty
             if layer.GetFeatureCount()>0:
                 srcRaster = gdal.Open(inputRaster)
@@ -377,14 +378,14 @@ if __name__ == "__main__":
 
 
                 for feature in layer:
-                    building_id = building_id+1
                     geom = feature.GetGeometryRef()
 
                     ## Calculate 3 band
                     polygonWKTList = geoPolygonToPixelPolygonWKT(geom, inputRaster, targetSR, geomTransform)
 
                     for polygonWKT in polygonWKTList:
-                        outputList = [imageFileTranslate[2], building_id, polygonWKT[0], polygonWKT[1], usage]
+                        building_id_3band +=1
+                        outputList = [imageFileTranslate[2], building_id_3band, polygonWKT[0], polygonWKT[1], usage]
                         writerTotal.writerow(outputList)
                         if usage == 'Private':
                             writerPrivate_3band.writerow(outputList[:-1])
@@ -394,7 +395,8 @@ if __name__ == "__main__":
                     polygonWKTList_8Band = geoPolygonToPixelPolygonWKT(geom, eightbandRaster, targetSR_8band, geomTransform_8band)
 
                     for polygonWKT in polygonWKTList_8Band:
-                        outputList = [imageFileTranslate[2], building_id, polygonWKT[0], polygonWKT[1], usage]
+                        building_id_8band += 1
+                        outputList = [imageFileTranslate[2], building_id_8band, polygonWKT[0], polygonWKT[1], usage]
                         writerTotal_8Band.writerow(outputList)
                         if usage == 'Private':
                             writerPrivate_8band.writerow(outputList[:-1])
